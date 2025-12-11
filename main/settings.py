@@ -7,7 +7,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'django-insecure-12345yourkeyhere54321'
 DEBUG = True
 
-ALLOWED_HOSTS = ["*",]
+ALLOWED_HOSTS = [
+    "api-doc.optivora-group.com",
+    "doc.optivora-group.com",
+    "134.122.73.130",
+    "localhost",
+    "127.0.0.1",
+]
 
 INSTALLED_APPS = [
     'modeltranslation',
