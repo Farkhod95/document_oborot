@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Region, District, Country
+from .models import Region, District, Country, Department, Position
 
 
 # Tarjima asosiy serializeri
@@ -70,12 +70,6 @@ class RegionListPublicSerializer(LocaleSerializer):
         fields = ('id', 'code', 'name')
 
 
-class RegionListPublicSerializer(LocaleSerializer):
-    class Meta:
-        model = District
-        fields = ('id', 'code', 'name')
-
-
 class DistrictListPublicSerializer(LocaleSerializer):
     class Meta:
         model = District
@@ -101,4 +95,54 @@ class DistrictSerializer(LocaleSerializer):
             'name_uz': {"required": True},
             'name_ru': {"required": True},
         }
+
+
+class DepartmentSerializer(LocaleSerializer):
+    class Meta:
+        model = Department
+        fields = ('id', 'name', 'name_en', 'name_uz', 'name_ru')
+        extra_kwargs = {
+            'name_en': {"required": True},
+            'name_uz': {"required": True},
+            'name_ru': {"required": True},
+        }
+
+
+class DepartmentListSerializer(LocaleSerializer):
+
+    class Meta:
+        model = Department
+        fields = ('id', 'name', 'name_en', 'name_uz', 'name_ru',)
+
+
+class DepartmentListPublicSerializer(LocaleSerializer):
+    class Meta:
+        model = Department
+        fields = ('id', 'name')
+
+
+class PositionSerializer(LocaleSerializer):
+    class Meta:
+        model = Position
+        fields = ('id', 'name', 'name_en', 'name_uz', 'name_ru', 'department')
+        extra_kwargs = {
+            'department': {"required": True},
+            'name_en': {"required": True},
+            'name_uz': {"required": True},
+            'name_ru': {"required": True},
+        }
+
+
+class PositionListSerializer(LocaleSerializer):
+    department_detail = DepartmentListPublicSerializer(source="department", read_only=True)
+
+    class Meta:
+        model = Position
+        fields = ('id', 'name', 'name_en', 'name_uz', 'name_ru', 'department', 'department_detail')
+
+
+class PositionListPublicSerializer(LocaleSerializer):
+    class Meta:
+        model = Position
+        fields = ('id', 'name')
 

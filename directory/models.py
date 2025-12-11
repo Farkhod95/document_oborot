@@ -41,3 +41,29 @@ class District(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class Department(BaseModel):
+    name = models.CharField(_('Department name'), max_length=255, null=True, blank=True,
+                            help_text=_("Bo‘limning nomini kiriting"))
+
+    class Meta:
+        verbose_name = _('department')
+        verbose_name_plural = _('departments')
+
+    def __str__(self):
+        return self.name
+
+
+class Position(BaseModel):
+    name = models.CharField(_('Position name'), max_length=255, null=True, blank=True,
+                            help_text=_("Lavozim nomini kiriting"))
+    department = models.ForeignKey(Department, related_name='positions', on_delete=models.SET_NULL, null=True,
+                                   blank=True, help_text=_("Lavozim tegishli bo‘lgan bo‘limni tanlang"))
+
+    class Meta:
+        verbose_name = _('position')
+        verbose_name_plural = _('positions')
+
+    def __str__(self):
+        return self.name

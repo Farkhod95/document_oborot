@@ -1,6 +1,6 @@
 from django_filters.rest_framework import FilterSet
 
-from directory.models import District, Region, Country
+from directory.models import District, Region, Country, Position, Department
 
 
 class DistrictFilter(FilterSet):
@@ -30,4 +30,23 @@ class RegionFilter(FilterSet):
         fields = {
             'name': ['exact'],
             'code': ['exact'],
+        }
+
+
+class PositionFilter(FilterSet):
+
+    class Meta:
+        model = Position
+        fields = {
+            'name': ['exact'],
+            'department': ['exact'],
+        }
+
+
+class DepartmentFilter(FilterSet):
+
+    class Meta:
+        model = Department
+        fields = {
+            'name': ['exact'],
         }

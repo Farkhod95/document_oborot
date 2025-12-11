@@ -1,8 +1,10 @@
 from django.urls import re_path, path
 
 from .views.country import CountryView, CountryDetailView, CountryFieldInfoView
+from .views.department import DepartmentView, DepartmentDetailView, DepartmentFieldInfoView
 from .views.district import DistrictView, DistrictDetailView, DistrictFieldInfoView
 from .views.import_country import CountryFileImportView
+from .views.position import PositionView, PositionDetailView, PositionFieldInfoView
 from .views.region import RegionView, RegionDetailView, RegionFieldInfoView
 
 urlpatterns = [
@@ -20,5 +22,11 @@ urlpatterns = [
     path('district/<int:pk>', DistrictDetailView.as_view(), name='districts_detail_view'),
     path('district/fields/', DistrictFieldInfoView.as_view(), name='district_fields_info'),
 
+    re_path(r'^department/$', DepartmentView.as_view(), name='department_view'),
+    path('department/<int:pk>', DepartmentDetailView.as_view(), name='department_detail_view'),
+    path('department/fields/', DepartmentFieldInfoView.as_view(), name='department_fields_info'),
 
+    re_path(r'^position/$', PositionView.as_view(), name='position_view'),
+    path('position/<int:pk>', PositionDetailView.as_view(), name='position_detail_view'),
+    path('position/fields/', PositionFieldInfoView.as_view(), name='position_fields_info'),
 ]
