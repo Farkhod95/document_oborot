@@ -18,8 +18,8 @@
 
 #### 4. Migrate
 
-    python manage.py makemigrations
-    python manage.py migrate
+        python manage.py makemigrations
+        python manage.py migrate
 
 #### 5. Create superuser
 
