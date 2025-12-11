@@ -25,6 +25,8 @@ class Company(models.Model):
     name  = models.CharField( max_length=100, help_text=_("Company name"))
     is_active = models.BooleanField(_('Active'), default=True, help_text=_("Company holati"))
     phone = models.CharField(_("Phone number"), max_length=100, help_text=_("Telefon raqami"))
+    country = models.ForeignKey("directory.Country", related_name='company_country', on_delete=models.SET_NULL, null=True,
+                               help_text=_("Mamlakat"))
     region = models.ForeignKey("directory.Region", related_name='company_region', on_delete=models.SET_NULL, null=True,
                                help_text=_("Viloyat"))
     district = models.ForeignKey("directory.District", related_name='company_district', on_delete=models.SET_NULL,
@@ -52,6 +54,8 @@ class User(AbstractUser):
         MALE = 'male', _('Male')
         FEMALE = 'female', _('Female')
 
+    companies = models.ManyToManyField('users.Company', blank=True, related_name='user_company',
+                                                      verbose_name=_('Kompaniya'))
     username = models.CharField(max_length=255, unique=True, help_text=_("Foydalanuvchi nomi"))
     fullname = models.CharField( max_length=100, help_text=_("Foydalanuvchi FIO"))
     avatar = models.ImageField(upload_to='avatars/%Y/%m/%d', null=True, blank=True, help_text=_("Profil rasmi"))

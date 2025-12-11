@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
-from docoborot.models import Product
-from .models import Region, District, Country, ProductCategory, ProductSize
+from .models import Region, District, Country
 
 
 # Tarjima asosiy serializeri

@@ -2,14 +2,14 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.admin import UserAdmin, GroupAdmin
 
-from users.models import User, Role, AppModule
+from users.models import User, Role, AppModule, Company
 
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        (_('Personal info'), {'fields': ('fullname', 'email', 'avatar')}),
+        (_('Personal info'), {'fields': ('fullname', 'email', 'companies')}),
         (_('Permissions'),
          {'fields': ('is_active', 'is_staff', 'role')}),
     )
@@ -17,7 +17,7 @@ class CustomUserAdmin(UserAdmin):
         (None, {
             'classes': ('wide',),
             'fields': ('fullname', 'email', 'gender', 'is_active', 'username', 'password1',
-                       'password2', 'role', 'address'),
+                       'password2', 'role', 'address', 'companies'),
         }),
     )
     list_display = ('username', 'email', 'fullname', 'is_superuser')
@@ -30,6 +30,14 @@ class CustomUserAdmin(UserAdmin):
         return obj.is_admin()
 
     is_admin.boolean = True
+
+
+
+@admin.register(Company)
+class CompanyAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'is_active', 'phone', 'country', 'region', 'district', 'address')
+    fields = ('code', 'name', 'is_active', 'phone', 'country', 'region', 'district', 'address')
+    search_fields = ('name', 'code', 'country', 'region', 'district',)
 
 
 @admin.register(Role)

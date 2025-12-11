@@ -27,7 +27,8 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
-class CompanySerializer(serializers.Serializer):
+class CompanySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Company
         fields = ('id', 'code', 'name', 'is_active', 'phone', 'region', 'district', 'address', 'created_time', 'created_by')
@@ -37,7 +38,7 @@ class CompanySerializer(serializers.Serializer):
         }
 
 
-class CompanyListSerializer(serializers.Serializer):
+class CompanyListSerializer(serializers.ModelSerializer):
     region_detail = RegionListSerializer(source='region', read_only=True)
     district_detail = DistrictListSerializer(source='district', read_only=True)
 
@@ -54,47 +55,66 @@ class LoginSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     # roles = RoleSerializer(source='role', read_only=True)
+    companies = serializers.PrimaryKeyRelatedField(
+        queryset=Company.objects.all(),
+        many=True,
+        required=False
+    )
 
     class Meta:
         model = User
         fields = (
             'id', 'username', 'fullname', 'is_active', 'date_of_birthday', 'gender', 'phone_number', 'avatar', 'email',
-            'date_joined', 'role', 'password', 'region', 'district', 'address', 'avatar')
+            'date_joined', 'role', 'password', 'region', 'district', 'address', 'avatar', 'companies')
         extra_kwargs = {
             'username': {
                 'validators': [UnicodeUsernameValidator(), UniqueValidator(queryset=User.objects.all())],
             }
         }
 
-    def create(self, validated_data, null=None):
-        password = validated_data.pop('password')
-        user = User.objects.create(**validated_data)
-        user.password = make_password(password)
+    def create(self, validated_data):
+        # ManyToMany va parolni alohida olib qo'yamiz
+        companies = validated_data.pop('companies', [])
+        password = validated_data.pop('password', None)
+
+        user = User(**validated_data)
+
+        if password:
+            # istasang validate_password(password) ham qo'shsa bo'ladi
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
+
         user.is_active = True
         user.save()
+
+        if companies:
+            user.companies.set(companies)
+
         return user
 
-    def update(self, instance, validated_data, ):
-        instance.username = validated_data.get("username", instance.username)
-        instance.fullname = validated_data.get("fullname", instance.fullname)
-        instance.is_active = validated_data.get("is_active", instance.is_active)
-        instance.date_of_birthday = validated_data.get("date_of_birthday", instance.date_of_birthday)
-        instance.gender = validated_data.get("gender", instance.gender)
-        instance.phone_number = validated_data.get("phone_number", instance.phone_number)
-        instance.avatar = validated_data.get("avatar", instance.avatar)
-        instance.email = validated_data.get("email", instance.email)
-        instance.date_joined = validated_data.get("date_joined", instance.date_joined)
-        instance.role = validated_data.get("role", instance.role)
-        # instance.roles = validated_data.get("roles", instance.roles)
-        instance.region = validated_data.get("region", instance.region)
-        instance.district = validated_data.get("district", instance.district)
-        instance.address = validated_data.get("address", instance.address)
-        password = validated_data.get("password", instance.password)
+    def update(self, instance, validated_data):
+        # ManyToMany maydon va parolni alohida ajratamiz
+        companies = validated_data.pop('companies', None)
+        password = validated_data.pop('password', None)
+
+        # Oddiy fieldlarni umumiy tarzda set qilamiz
+        for attr, value in validated_data.items():
+            # date_joined va boshqa read_only fieldlar Meta.read_only_fields orqali himoyalangan
+            setattr(instance, attr, value)
+
+        # Parol bo‘lsa, hash qilib saqlaymiz
         if password:
-            instance.password = make_password(password)
-        else:
-            instance.password = instance.password
+            instance.set_password(password)
+
         instance.save()
+
+        # ManyToMany yangilash:
+        # Agar `companies` keldi -> to‘liq yangidan set qilamiz
+        # Agar kelmasa -> umuman tegmaymiz
+        if companies is not None:
+            instance.companies.set(companies)
+
         return instance
 
 
@@ -102,13 +122,15 @@ class UserListPublicSerializer(serializers.ModelSerializer):
     roles = RoleSerializer(source='role', read_only=True)
     region_detail = RegionListSerializer(source='region', read_only=True)
     district_detail = DistrictSerializer(source='district', read_only=True)
+    companies_detail = CompanyListSerializer(source='companies', many=True, read_only=True)
 
     class Meta:
         model = User
         fields = (
             'id', 'username', 'fullname', 'is_active', 'date_of_birthday', 'gender', 'phone_number', 'avatar', 'email',
             'date_joined', 'role', 'roles', 'password', 'region', 'region_detail', 'district', 'district_detail', 'address',
-            'avatar')
+            'avatar', 'companies', 'companies_detail')
+
 
 class UserDetailSerializer(serializers.ModelSerializer):
 

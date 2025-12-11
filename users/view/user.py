@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from users.filterset import UserFilter
 from users.models import User
-from users.serializers import UserSerializer, ChangePasswordSerializer,UserListSerializer
+from users.serializers import UserSerializer, ChangePasswordSerializer, UserListSerializer, UserListPublicSerializer
 from restapp.pagination import ResultsSetPagination
 from restapp.utils.responses import nonContent
 
@@ -21,14 +21,7 @@ class UserListView(APIView):
 
 
 class UserView(ListCreateAPIView):
-    """
-    Burn Community foydalanuvchisi (Telegram user).
-        - Telegram ID, username, FIO, avatar, telefon, email, region va kategoriya saqlanadi.
-        - points_balance: yuqori o‘ngdagi “b 0” ikonkasidagi ball balansi.
-        - referral_code / referred_by: “Пригласить друга” referal dasturi uchun.
-        - is_*_completed flaglar: profilni to‘ldirishdan bonus berish uchun maydonlar to‘lganligini belgilash.
-    """
-    serializer_class = UserSerializer
+    serializer_class = UserListPublicSerializer
     pagination_class = ResultsSetPagination
     filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend)
     filterset_class = UserFilter
@@ -40,7 +33,7 @@ class UserView(ListCreateAPIView):
         return queryset
 
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
+        serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(created_by=self.request.user)
         return Response(serializer.data, status.HTTP_201_CREATED)

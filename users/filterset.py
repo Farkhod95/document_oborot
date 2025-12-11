@@ -14,6 +14,7 @@ class UserFilter(FilterSet):
             'role': ['exact'],
             'region': ['exact'],
             'district': ['exact'],
+            'companies': ['exact'],
         }
 
 
