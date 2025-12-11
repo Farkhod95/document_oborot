@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from docoborot.models import Command, CommandFile
-from users.serializers import CompanySerializer
+from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile
+from users.serializers import CompanySerializer, UserDetailSerializer
 
 
 # Tarjima asosiy serializeri
@@ -62,7 +62,7 @@ class BaseLocaleSerializer(serializers.ModelSerializer):
 class CommandSerializer(LocaleSerializer):
     class Meta:
         model = Command
-        fields = ('id', 'company', 'order_number', 'basis', 'basis_en', 'basis_uz', 'basis_ru', 'comment', 'comment_en', 'comment_uz', 'comment_ru')
+        fields = ('id', 'company', 'command_number', 'basis', 'basis_en', 'basis_uz', 'basis_ru', 'comment', 'comment_en', 'comment_uz', 'comment_ru')
 
 
 class CommandListSerializer(LocaleSerializer):
@@ -70,10 +70,32 @@ class CommandListSerializer(LocaleSerializer):
 
     class Meta:
         model = Command
-        fields = ('id', 'company', 'company_detail', 'order_number', 'basis', 'basis_en', 'basis_uz', 'basis_ru', 'comment', 'comment_en', 'comment_uz', 'comment_ru')
+        fields = ('id', 'company', 'company_detail', 'command_number', 'basis', 'basis_en', 'basis_uz', 'basis_ru', 'comment', 'comment_en', 'comment_uz', 'comment_ru')
 
 
 class CommandFileSerializer(LocaleSerializer):
     class Meta:
         model = CommandFile
-        fields = ('id', 'order_document', 'title', 'file')
+        fields = ('id', 'command', 'title', 'file')
+
+
+class ReplyLetterSerializer(LocaleSerializer):
+    class Meta:
+        model = ReplyLetter
+        fields = ('id', 'company', 'task', 'letter_number', 'responsible_person', 'basis', 'comment')
+
+
+class ReplyLetterListSerializer(LocaleSerializer):
+    company_detail = CompanySerializer(source='company', read_only=True)
+    responsible_person_detail = UserDetailSerializer(source='responsible_person', read_only=True)
+
+    class Meta:
+        model = ReplyLetter
+        fields = ('id', 'company', 'company_detail', 'task', 'letter_number', 'responsible_person',
+                  'responsible_person_detail', 'basis', 'comment')
+
+
+class ReplyLetterFileSerializer(LocaleSerializer):
+    class Meta:
+        model = ReplyLetterFile
+        fields = ('id', 'reply_letter', 'title', 'file')
