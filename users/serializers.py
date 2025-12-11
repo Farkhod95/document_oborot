@@ -31,7 +31,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        fields = ('id', 'code', 'name', 'is_active', 'phone', 'region', 'district', 'address', 'created_time', 'created_by')
+        fields = ('id', 'code', 'name', 'is_active', 'phone', 'region', 'district', 'address', 'created_time', 'created_by', 'logo')
         extra_kwargs = {
             'code': {"required": True},
             'name': {"required": True},
@@ -45,7 +45,7 @@ class CompanyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = ('id', 'code', 'name', 'is_active', 'phone', 'region', 'region_detail', 'district', 'district_detail',
-                  'address', 'created_time', 'created_by')
+                  'address', 'created_time', 'created_by', 'logo')
 
 
 class LoginSerializer(serializers.Serializer):

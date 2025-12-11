@@ -36,7 +36,7 @@ class CustomUserAdmin(UserAdmin):
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
     list_display = ('code', 'name', 'is_active', 'phone', 'country', 'region', 'district', 'address')
-    fields = ('code', 'name', 'is_active', 'phone', 'country', 'region', 'district', 'address')
+    fields = ('code', 'name', 'is_active', 'phone', 'country', 'region', 'district', 'address', 'logo')
     search_fields = ('name', 'code', 'country', 'region', 'district',)
 
 

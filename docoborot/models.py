@@ -26,7 +26,7 @@ class Command(BaseModel):
 class CommandFile(BaseModel):
     order_document = models.ForeignKey(Command, on_delete=models.CASCADE, related_name="files", verbose_name="Order document",)
     title = models.CharField("Title", max_length=255)
-    file = models.FileField("File", upload_to="order_documents/")
+    file = models.FileField("File", upload_to="command/%Y/%m/%d", null=True, blank=True)
 
     class Meta:
         verbose_name = "Command file"

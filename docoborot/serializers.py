@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from users.serializers import UserDetailSerializer
+from docoborot.models import Command, CommandFile
+from users.serializers import CompanySerializer
 
 
 # Tarjima asosiy serializeri
@@ -17,6 +18,14 @@ class LocaleSerializer(serializers.ModelSerializer):
     subtitle_uz = serializers.CharField(allow_blank=False)
     subtitle_ru = serializers.CharField(allow_blank=False)
 
+    basis_en = serializers.CharField(allow_blank=False)
+    basis_uz = serializers.CharField(allow_blank=False)
+    basis_ru = serializers.CharField(allow_blank=False)
+
+    comment_en = serializers.CharField(allow_blank=False)
+    comment_uz = serializers.CharField(allow_blank=False)
+    comment_ru = serializers.CharField(allow_blank=False)
+
 
 class BaseLocaleSerializer(serializers.ModelSerializer):
     """
@@ -28,7 +37,7 @@ class BaseLocaleSerializer(serializers.ModelSerializer):
         'name',
     ]
     LANGS = ['en', 'uz', 'ru']
-    REQUIRED_BASES = {'name', 'title', 'subtitle'}  # muhim maydonlar
+    REQUIRED_BASES = {'name', 'title', 'subtitle', 'basis', 'comment'}  # muhim maydonlar
 
     def get_fields(self):
         fields = super().get_fields()
@@ -48,3 +57,23 @@ class BaseLocaleSerializer(serializers.ModelSerializer):
                         required=(base in self.REQUIRED_BASES)
                     )
         return fields
+
+
+class CommandSerializer(LocaleSerializer):
+    class Meta:
+        model = Command
+        fields = ('id', 'company', 'order_number', 'basis', 'basis_en', 'basis_uz', 'basis_ru', 'comment', 'comment_en', 'comment_uz', 'comment_ru')
+
+
+class CommandListSerializer(LocaleSerializer):
+    company_detail = CompanySerializer(source='company', read_only=True)
+
+    class Meta:
+        model = Command
+        fields = ('id', 'company', 'company_detail', 'order_number', 'basis', 'basis_en', 'basis_uz', 'basis_ru', 'comment', 'comment_en', 'comment_uz', 'comment_ru')
+
+
+class CommandFileSerializer(LocaleSerializer):
+    class Meta:
+        model = CommandFile
+        fields = ('id', 'order_document', 'title', 'file')

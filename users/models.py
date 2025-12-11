@@ -23,6 +23,7 @@ class Company(models.Model):
 
     code = models.CharField(max_length=255, unique=True, help_text=_("Company Code"))
     name  = models.CharField( max_length=100, help_text=_("Company name"))
+    logo = models.ImageField(upload_to='logo/%Y/%m/%d', null=True, blank=True, help_text=_("Profil rasmi"))
     is_active = models.BooleanField(_('Active'), default=True, help_text=_("Company holati"))
     phone = models.CharField(_("Phone number"), max_length=100, help_text=_("Telefon raqami"))
     country = models.ForeignKey("directory.Country", related_name='company_country', on_delete=models.SET_NULL, null=True,
