@@ -1,0 +1,34 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    container_name: doc_oborot_web
+    ports:
+      - "8080:8000"   # host:container (host 8088 -> container 8000)
+    volumes:
+      - .:/app
+      - static_volume:/app/doc_static
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - db
+    # DB tayyor bo'lguncha kutish
+    entrypoint: ["./wait-for-it.sh", "db:5432", "--"]
+    command: ["daphne", "-b", "0.0.0.0", "-p", "8000", "main.asgi:application"]
+
+  db:
+    image: postgres:15
+    container_name: db_doc_oborot
+#    ports:
+#      - "5433:5432"  # host 5433 -> container 5432
+    environment:
+      POSTGRES_DB: db_doc_oborot
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+  static_volume:
