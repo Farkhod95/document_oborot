@@ -142,12 +142,13 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 class UserListSerializer(serializers.ModelSerializer):
     roles = RoleSerializer(source='role', read_only=True)
+    companies_detail = CompanyListSerializer(source='companies', many=True, read_only=True)
 
     class Meta:
         model = User
         fields = (
             'id', 'username', 'fullname', 'is_active', 'date_of_birthday', 'gender', 'phone_number', 'avatar', 'email',
-            'date_joined', 'role', 'roles', 'password', 'region', 'district', 'address', 'avatar')
+            'date_joined', 'role', 'roles', 'password', 'region', 'district', 'address', 'avatar', 'companies', 'companies_detail')
 
 
 class RelatedUserSerializer(serializers.ModelSerializer):
