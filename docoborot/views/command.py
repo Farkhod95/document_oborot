@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from docoborot.filterset import CommandFilter
 from docoborot.models import Command
-from docoborot.serializers import CommandSerializer
+from docoborot.serializers import CommandSerializer, CommandListSerializer
 
 from restapp.pagination import ResultsSetPagination
 from restapp.utils.responses import nonContent
@@ -33,7 +33,7 @@ class CommandFieldInfoView(APIView):
 
 
 class CommandView(ListCreateAPIView):
-    serializer_class = CommandSerializer
+    serializer_class = CommandListSerializer
     pagination_class = ResultsSetPagination
     filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend)
     filterset_class = CommandFilter
@@ -61,7 +61,7 @@ class CommandDetailView(RetrieveUpdateDestroyAPIView):
 
     def get(self, request, pk):
         instance = get_object_or_404(Command, id=pk)
-        serializer = CommandSerializer(instance)
+        serializer = CommandListSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):

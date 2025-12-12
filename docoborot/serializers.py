@@ -62,7 +62,7 @@ class BaseLocaleSerializer(serializers.ModelSerializer):
 class CommandSerializer(LocaleSerializer):
     class Meta:
         model = Command
-        fields = ('id', 'company', 'command_number', 'basis', 'basis_en', 'basis_uz', 'basis_ru', 'comment', 'comment_en', 'comment_uz', 'comment_ru')
+        fields = ('id', 'company', 'command_number', 'basis', 'basis_en', 'basis_uz', 'basis_ru', 'comment', 'comment_en', 'comment_uz', 'comment_ru', 'created_time')
 
 
 class CommandListSerializer(LocaleSerializer):
@@ -70,7 +70,7 @@ class CommandListSerializer(LocaleSerializer):
 
     class Meta:
         model = Command
-        fields = ('id', 'company', 'company_detail', 'command_number', 'basis', 'basis_en', 'basis_uz', 'basis_ru', 'comment', 'comment_en', 'comment_uz', 'comment_ru')
+        fields = ('id', 'company', 'company_detail', 'command_number', 'basis', 'basis_en', 'basis_uz', 'basis_ru', 'comment', 'comment_en', 'comment_uz', 'comment_ru', 'created_time')
 
 
 class CommandFileSerializer(LocaleSerializer):
