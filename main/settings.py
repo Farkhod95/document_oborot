@@ -98,28 +98,28 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800
 
 WSGI_APPLICATION = 'main.wsgi.application'
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'doc_oborot_db',
-#         'USER': 'postgres',
-#         'PASSWORD': 'root',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
-
-#
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'doc_oborot_db',
-        'USER': 'doc_oborot_user',
-        'PASSWORD': 'doc_oborot_password',
+        'USER': 'postgres',
+        'PASSWORD': 'root',
         'HOST': 'localhost',
         'PORT': '5432',
     }
 }
+
+#
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'doc_oborot_db',
+#         'USER': 'doc_oborot_user',
+#         'PASSWORD': 'doc_oborot_password',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 
 

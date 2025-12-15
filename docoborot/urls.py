@@ -5,8 +5,13 @@ from docoborot.views.command_file import CommandFileView, CommandFileDetailView,
 from docoborot.views.reply_letter import ReplyLetterView, ReplyLetterDetailView, ReplyLetterFieldInfoView
 from docoborot.views.reply_letter_file import ReplyLetterFileView, ReplyLetterFileDetailView, \
     ReplyLetterFileFieldInfoView
+from docoborot.views.task_file import TaskFileView, TaskFileDetailView, TaskFileFieldInfoView
 
 urlpatterns = [
+
+    re_path(r'^task-file/$', TaskFileView.as_view(), name='task_file_view'),
+    path('task-file/<int:pk>', TaskFileDetailView.as_view(), name='task_file_detail_view'),
+    path('task-file/fields/', TaskFileFieldInfoView.as_view(), name='task_file_fields_info'),
     re_path(r'^command/$', CommandView.as_view(), name='command_view'),
     path('command/<int:pk>', CommandDetailView.as_view(), name='command_detail_view'),
     path('command/fields/', CommandFieldInfoView.as_view(), name='command_fields_info'),

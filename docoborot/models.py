@@ -28,7 +28,7 @@ class Task(BaseModel):
                                    blank=True, help_text=_("Bo‘lim"))
     signed_by = models.ForeignKey(User, related_name='task_signed_by', on_delete=models.CASCADE,
                                            verbose_name=_('Imzolovchi'))
-    note = models.TextField(_('Note '), blank=True, help_text=_("Izoh"))
+    note = models.TextField(_('Note'), blank=True, help_text=_("Izoh"))
 
 
 
@@ -38,6 +38,20 @@ class Task(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class TaskFile(BaseModel):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="files_task", verbose_name="Task",)
+    title = models.CharField("Title", max_length=255)
+    file = models.FileField("File", upload_to="task/%Y/%m/%d", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Task file"
+        verbose_name_plural = "Task files"
+
+    def __str__(self):
+        return f"{self.task.name} - {self.title}"
+
 
 class Command(BaseModel):
     company = models.ForeignKey(Company, related_name='command_company', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Kompaniya"))

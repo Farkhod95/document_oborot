@@ -1,6 +1,6 @@
 from django_filters.rest_framework import FilterSet
 
-from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile
+from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile, TaskFile
 
 
 class CommandFilter(FilterSet):
@@ -37,5 +37,14 @@ class ReplyLetterFileFilter(FilterSet):
         model = ReplyLetterFile
         fields = {
             'reply_letter': ['exact'],
+            'title': ['exact', 'icontains'],
+        }
+
+
+class TaskFileFilter(FilterSet):
+    class Meta:
+        model = TaskFile
+        fields = {
+            'task': ['exact'],
             'title': ['exact', 'icontains'],
         }

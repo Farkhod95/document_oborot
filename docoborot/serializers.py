@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile
+from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile, TaskFile
 from users.serializers import CompanySerializer, UserDetailSerializer
 
 
@@ -99,3 +99,9 @@ class ReplyLetterFileSerializer(LocaleSerializer):
     class Meta:
         model = ReplyLetterFile
         fields = ('id', 'reply_letter', 'title', 'file')
+
+
+class TaskFileSerializer(LocaleSerializer):
+    class Meta:
+        model = TaskFile
+        fields = ('id', 'task', 'title', 'file')

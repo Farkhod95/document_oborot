@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile
+from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile, TaskFile
 
 
 @admin.register(Command)
@@ -29,3 +29,10 @@ class ReplyLetterFileAdmin(admin.ModelAdmin):
     list_display = ('reply_letter', 'title',)
     fields =  ('reply_letter', 'title', 'file')
     search_fields = ('reply_letter', 'title')
+
+
+@admin.register(TaskFile)
+class TaskFileAdmin(admin.ModelAdmin):
+    list_display = ('task', 'title',)
+    fields =  ('task', 'title', 'file')
+    search_fields = ('task', 'title')
