@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Region, District, Country, Department, Position
+from .models import Region, District, Country, Department, Position, DocumentForm, ListOfMagazine
 
 
 # Tarjima asosiy serializeri
@@ -145,4 +145,18 @@ class PositionListPublicSerializer(LocaleSerializer):
     class Meta:
         model = Position
         fields = ('id', 'name')
+
+
+class DocumentFormSerializer(LocaleSerializer):
+
+    class Meta:
+        model = DocumentForm
+        fields = ('id', 'name', 'name_en', 'name_uz', 'name_ru',)
+
+
+class ListOfMagazineSerializer(LocaleSerializer):
+
+    class Meta:
+        model = ListOfMagazine
+        fields = ('id', 'name', 'name_en', 'name_uz', 'name_ru',)
 

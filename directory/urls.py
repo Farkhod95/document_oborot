@@ -3,7 +3,9 @@ from django.urls import re_path, path
 from .views.country import CountryView, CountryDetailView, CountryFieldInfoView
 from .views.department import DepartmentView, DepartmentDetailView, DepartmentFieldInfoView
 from .views.district import DistrictView, DistrictDetailView, DistrictFieldInfoView
+from .views.document_form import DocumentFormView, DocumentFormDetailView, DocumentFormFieldInfoView
 from .views.import_country import CountryFileImportView
+from .views.list_of_magazine import ListOfMagazineView, ListOfMagazineDetailView, ListOfMagazineFieldInfoView
 from .views.position import PositionView, PositionDetailView, PositionFieldInfoView
 from .views.region import RegionView, RegionDetailView, RegionFieldInfoView
 
@@ -29,4 +31,12 @@ urlpatterns = [
     re_path(r'^position/$', PositionView.as_view(), name='position_view'),
     path('position/<int:pk>', PositionDetailView.as_view(), name='position_detail_view'),
     path('position/fields/', PositionFieldInfoView.as_view(), name='position_fields_info'),
+
+    re_path(r'^document-form/$', DocumentFormView.as_view(), name='document_form_view'),
+    path('document-form/<int:pk>', DocumentFormDetailView.as_view(), name='document_form_detail_view'),
+    path('document-form/fields/', DocumentFormFieldInfoView.as_view(), name='document_form_fields_info'),
+
+    re_path(r'^list-of-magazine/$', ListOfMagazineView.as_view(), name='list_of_magazines_view'),
+    path('list-of-magazine/<int:pk>', ListOfMagazineDetailView.as_view(), name='list_of_magazines_detail_view'),
+    path('list-of-magazine/fields/', ListOfMagazineFieldInfoView.as_view(), name='list_of_magazines_fields_info'),
 ]

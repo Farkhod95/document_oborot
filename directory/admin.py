@@ -1,6 +1,6 @@
 from django.contrib import admin
 from directory.models import (
-    District, Region, Country, Department, Position
+    District, Region, Country, Department, Position, DocumentForm, ListOfMagazine
 )
 
 
@@ -36,4 +36,18 @@ class DepartmentAdmin(admin.ModelAdmin):
 class PositionAdmin(admin.ModelAdmin):
     list_display = ('name', 'department', 'name_en', 'name_uz', 'name_ru')
     fields = ('name', 'name_en', 'name_uz', 'name_ru', 'department')
+    search_fields = ('name', 'name_en', 'name_uz', 'name_ru')
+
+
+@admin.register(DocumentForm)
+class DocumentFormAdmin(admin.ModelAdmin):
+    list_display = ('name_en', 'name_uz', 'name_ru')
+    fields = ('name', 'name_en', 'name_uz', 'name_ru')
+    search_fields = ('name', 'name_en', 'name_uz', 'name_ru')
+
+
+@admin.register(ListOfMagazine)
+class ListOfMagazineAdmin(admin.ModelAdmin):
+    list_display = ('name_en', 'name_uz', 'name_ru')
+    fields = ('name', 'name_en', 'name_uz', 'name_ru')
     search_fields = ('name', 'name_en', 'name_uz', 'name_ru')

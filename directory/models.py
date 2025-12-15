@@ -67,3 +67,28 @@ class Position(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class DocumentForm(BaseModel):
+    name = models.CharField(_('Document form'), max_length=255, null=True, blank=True,
+                            help_text=_("Hujjat shakli"))
+
+    class Meta:
+        verbose_name = _('Document Form')
+        verbose_name_plural = _('Document Forms')
+
+    def __str__(self):
+        return self.name
+
+
+
+class ListOfMagazine(BaseModel):
+    name = models.CharField(_('Jurnal name'), max_length=255, null=True, blank=True,
+                            help_text=_("Jurnal nomi"))
+
+    class Meta:
+        verbose_name = _('List Of Magazine')
+        verbose_name_plural = _('List Of Magazines')
+
+    def __str__(self):
+        return self.name

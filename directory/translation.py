@@ -1,6 +1,6 @@
 from modeltranslation.translator import register, TranslationOptions
 
-from .models import Region, District, Country, Department, Position
+from .models import Region, District, Country, Department, Position, DocumentForm, ListOfMagazine
 
 
 @register(Country)
@@ -24,4 +24,14 @@ class DepartmentTranslationOptions(TranslationOptions):
 
 @register(Position)
 class PositionTranslationOptions(TranslationOptions):
+    fields = ('name',)
+
+
+@register(DocumentForm)
+class DocumentFormTranslationOptions(TranslationOptions):
+    fields = ('name',)
+
+
+@register(ListOfMagazine)
+class ListOfMagazineTranslationOptions(TranslationOptions):
     fields = ('name',)

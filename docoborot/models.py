@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from directory.models import Region, District, Country
+from directory.models import Region, District, Country, DocumentForm, Department
 from restapp.models import BaseModel
 from users.models import Company
 
@@ -10,8 +10,26 @@ User = settings.AUTH_USER_MODEL
 
 
 class Task(BaseModel):
+    class STATUS(models.TextChoices):
+        ORDINARY = 'ordinary', _('Ordinary') # Обычный
+        ORGENTLY = 'orgently', _('Urgently') # Срочно
+
     company = models.ForeignKey(Company, related_name='command_task', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Vazifalar"))
-    task_number = models.CharField(_('Task number'), max_length=100, null=True, blank=True, help_text=_("Task raqami"))
+    name = models.CharField(_('Task number'), max_length=100, null=True, blank=True, help_text=_("Task raqami"))
+    task_form = models.ForeignKey(DocumentForm, related_name='task_forms', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Hujjat shakli"))
+    sending_org = models.CharField(_('Sending  '), max_length=255, null=True, blank=True, help_text=_("Yuboruvchi tashkilot"))
+    input_doc_number = models.CharField(_('Input doc number '), max_length=255, null=True, blank=True, help_text=_("Kiruvchi hujjat raqami"))
+    output_doc_number = models.CharField(_('Output doc number '), max_length=255, null=True, blank=True, help_text=_("Chiquvchi hujjat raqami"))
+    start_date = models.DateField(_('Start date'), null=True, blank=True, help_text=_("Boshlash sanasi"))
+    end_date = models.DateField(_('End date'), null=True, blank=True, help_text=_("Tugash sanasi"))
+    status = models.CharField(choices=STATUS.choices, max_length=12, null=True, blank=True, help_text=_("Holati"))
+    sending_respon_person = models.CharField(_('Responsible person for sending '), max_length=255, null=True, blank=True, help_text=_("Yuborish uchun mas'ul shaxs"))
+    department = models.ForeignKey(Department, related_name='task_depatment', on_delete=models.SET_NULL, null=True,
+                                   blank=True, help_text=_("Bo‘lim"))
+    signed_by = models.ForeignKey(User, related_name='task_signed_by', on_delete=models.CASCADE,
+                                           verbose_name=_('Imzolovchi'))
+    note = models.TextField(_('Note '), blank=True, help_text=_("Izoh"))
+
 
 
     class Meta:
@@ -19,7 +37,7 @@ class Task(BaseModel):
         verbose_name_plural = _('Tasks')
 
     def __str__(self):
-        return self.task_number
+        return self.name
 
 class Command(BaseModel):
     company = models.ForeignKey(Company, related_name='command_company', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Kompaniya"))
