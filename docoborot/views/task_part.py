@@ -5,21 +5,20 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from docoborot.filterset import TaskFileFilter
-from docoborot.models import TaskFile
-from docoborot.serializers import TaskFileSerializer
+from docoborot.models import TaskPart
+from docoborot.serializers import TaskPartSerializer
+from docoborot.filterset import TaskPartFilter
 
 from restapp.pagination import ResultsSetPagination
 from restapp.utils.responses import nonContent
 
 
-class TaskFileFieldInfoView(APIView):
+class TaskPartFieldInfoView(APIView):
     permission_classes = [IsAuthenticated,]
 
     def get(self, request):
         field_info = []
-
-        for field in TaskFile._meta.fields:
+        for field in TaskPart._meta.fields:
             field_info.append({
                 "field_name": field.name,
                 "verbose_name": str(field.verbose_name),
@@ -28,53 +27,57 @@ class TaskFileFieldInfoView(APIView):
                 "max_length": getattr(field, 'max_length', None),
                 "choices": dict(field.choices) if field.choices else None
             })
-
         return Response(field_info)
 
 
-class TaskFileView(ListCreateAPIView):
-    serializer_class = TaskFileSerializer
+class TaskPartView(ListCreateAPIView):
+    """
+    TaskPart (Vazifa bo‘lagi / Subtask):
+    - Task ichidagi alohida qism.
+    - Har bir qism bitta ijrochiga (assignee) biriktiriladi.
+    - Status va muddatlar qism bo‘yicha alohida yuradi.
+    """
+    permission_classes = [IsAuthenticated,]
+    serializer_class = TaskPartSerializer
     pagination_class = ResultsSetPagination
     filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend)
-    filterset_class = TaskFileFilter
-    search_fields = ('task', 'title')
+    filterset_class = TaskPartFilter
+    search_fields = ('title', 'note')
     ordering = ['pk']
 
     def get_queryset(self):
-        return TaskFile.objects.all()
+        return TaskPart.objects.all()
 
     def post(self, request):
-        serializer = TaskFileSerializer(data=request.data)
+        serializer = TaskPartSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(created_by=self.request.user)
         return Response(serializer.data, status.HTTP_201_CREATED)
 
 
-class TaskFileDetailView(RetrieveUpdateDestroyAPIView):
-    serializer_class = TaskFileSerializer
+class TaskPartDetailView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated,]
+    serializer_class = TaskPartSerializer
 
     def get_queryset(self):
-        return TaskFile.objects.all()
+        return TaskPart.objects.all()
 
     def perform_update(self, serializer):
         serializer.save(updated_by=self.request.user)
 
     def get(self, request, pk):
-        instance = get_object_or_404(TaskFile, id=pk)
-        serializer = TaskFileSerializer(instance)
+        instance = get_object_or_404(TaskPart, id=pk)
+        serializer = TaskPartSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
-        instance = get_object_or_404(TaskFile, id=pk)
+        instance = get_object_or_404(TaskPart, id=pk)
         serializer = self.serializer_class(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(updated_by=self.request.user)
         return Response(serializer.data, status.HTTP_202_ACCEPTED)
 
     def delete(self, request, pk):
-        instance = get_object_or_404(TaskFile, id=pk)
+        instance = get_object_or_404(TaskPart, id=pk)
         instance.delete()
         return Response(nonContent(), status.HTTP_204_NO_CONTENT)
-
-
-

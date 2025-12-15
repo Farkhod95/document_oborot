@@ -1,7 +1,9 @@
 from rest_framework import serializers
 
-from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile, TaskFile
+from directory.serializers import DepartmentSerializer, DocumentFormSerializer, ListOfMagazineSerializer
+from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile
 from users.serializers import CompanySerializer, UserDetailSerializer
+from docoborot.models import Task, TaskPart, TaskEvent, TaskAttachment, TaskComment
 
 
 # Tarjima asosiy serializeri
@@ -101,7 +103,96 @@ class ReplyLetterFileSerializer(LocaleSerializer):
         fields = ('id', 'reply_letter', 'title', 'file')
 
 
-class TaskFileSerializer(LocaleSerializer):
+class TaskShortSerializer(LocaleSerializer):
+    """Ichki detail uchun (TaskPart/TaskEvent/... da task_detail)"""
+    company_detail = CompanySerializer(source='company', read_only=True)
+    department_detail = DepartmentSerializer(source='department', read_only=True)
+    list_of_magazine_detail = ListOfMagazineSerializer(source='list_of_magazine', read_only=True)
+
     class Meta:
-        model = TaskFile
-        fields = ('id', 'task', 'title', 'file')
+        model = Task
+        fields = ('id', 'name', 'status', 'type', 'priority', 'company', 'company_detail', 'department', 'department_detail', 'list_of_magazine', 'list_of_magazine_detail')
+
+
+class TaskPartShortSerializer(LocaleSerializer):
+    """Ichki detail uchun (TaskEvent/Attachment/Comment da part_detail)"""
+    assignee_detail = UserDetailSerializer(source='assignee', read_only=True)
+    department_detail = DepartmentSerializer(source='department', read_only=True)
+
+    class Meta:
+        model = TaskPart
+        fields = ('id', 'task', 'title', 'status', 'assignee', 'assignee_detail', 'department', 'department_detail', 'start_date', 'end_date')
+
+
+class TaskSerializer(LocaleSerializer):
+    company_detail = CompanySerializer(source='company', read_only=True)
+    task_form_detail = DocumentFormSerializer(source='task_form', read_only=True)
+    department_detail = DepartmentSerializer(source='department', read_only=True)
+    signed_by_detail = UserDetailSerializer(source='signed_by', read_only=True)
+    list_of_magazine_detail = ListOfMagazineSerializer(source='list_of_magazine', read_only=True)
+
+    class Meta:
+        model = Task
+        fields = (
+            'id', 'status', 'company', 'company_detail', 'type', 'name',
+            'task_form', 'task_form_detail', 'sending_org', 'input_doc_number', 'output_doc_number',
+            'start_date', 'end_date', 'priority', 'sending_respon_person',
+            'department', 'department_detail', 'signed_by', 'signed_by_detail', 'note',
+            'created_time', 'updated_time', 'created_by', 'updated_by', 'list_of_magazine', 'list_of_magazine_detail'
+        )
+
+
+class TaskPartSerializer(LocaleSerializer):
+    task_detail = TaskShortSerializer(source='task', read_only=True)
+    assignee_detail = UserDetailSerializer(source='assignee', read_only=True)
+    department_detail = DepartmentSerializer(source='department', read_only=True)
+
+    class Meta:
+        model = TaskPart
+        fields = (
+            'id', 'task', 'task_detail', 'title', 'department', 'department_detail',
+            'assignee', 'assignee_detail', 'start_date', 'end_date', 'status', 'note',
+            'created_time', 'updated_time', 'created_by', 'updated_by',
+        )
+
+
+class TaskEventSerializer(LocaleSerializer):
+    task_detail = TaskShortSerializer(source='task', read_only=True)
+    part_detail = TaskPartShortSerializer(source='part', read_only=True)
+    actor_detail = UserDetailSerializer(source='actor', read_only=True)
+
+    class Meta:
+        model = TaskEvent
+        fields = (
+            'id', 'task', 'task_detail', 'part', 'part_detail', 'actor', 'actor_detail',
+            'event_type', 'message', 'from_status', 'to_status', 'extra',
+            'created_time', 'updated_time', 'created_by', 'updated_by',
+        )
+
+
+class TaskAttachmentSerializer(LocaleSerializer):
+    task_detail = TaskShortSerializer(source='task', read_only=True)
+    part_detail = TaskPartShortSerializer(source='part', read_only=True)
+    uploaded_by_detail = UserDetailSerializer(source='uploaded_by', read_only=True)
+
+    class Meta:
+        model = TaskAttachment
+        fields = (
+            'id', 'task', 'task_detail', 'part', 'part_detail',
+            'title', 'file', 'uploaded_by', 'uploaded_by_detail',
+            'created_time', 'updated_time', 'created_by', 'updated_by',
+        )
+
+
+class TaskCommentSerializer(LocaleSerializer):
+    task_detail = TaskShortSerializer(source='task', read_only=True)
+    part_detail = TaskPartShortSerializer(source='part', read_only=True)
+    author_detail = UserDetailSerializer(source='author', read_only=True)
+
+    class Meta:
+        model = TaskComment
+        fields = (
+            'id', 'task', 'task_detail', 'part', 'part_detail',
+            'author', 'author_detail', 'text', 'is_system',
+            'created_time', 'updated_time', 'created_by', 'updated_by',
+        )
