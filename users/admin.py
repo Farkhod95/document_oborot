@@ -11,17 +11,17 @@ class CustomUserAdmin(UserAdmin):
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'), {'fields': ('fullname', 'email', 'companies')}),
         (_('Permissions'),
-         {'fields': ('is_active', 'is_staff', 'role')}),
+         {'fields': ('is_active', 'is_staff', 'roles')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
             'fields': ('fullname', 'email', 'gender', 'is_active', 'username', 'password1',
-                       'password2', 'role', 'address', 'companies'),
+                       'password2', 'roles', 'address', 'companies'),
         }),
     )
     list_display = ('username', 'email', 'fullname', 'is_superuser')
-    list_filter = ('is_staff', 'is_superuser', 'is_active', 'role')
+    list_filter = ('is_staff', 'is_superuser', 'is_active', 'roles')
     search_fields = ('username', 'fullname', 'email')
     ordering = ('username',)
     filter_horizontal = ('groups', 'user_permissions',)

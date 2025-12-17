@@ -55,6 +55,12 @@ class LoginSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     # roles = RoleSerializer(source='role', read_only=True)
+    roles = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Role.objects.all(),
+        required=False
+    )
+
     companies = serializers.PrimaryKeyRelatedField(
         queryset=Company.objects.all(),
         many=True,
@@ -65,7 +71,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'username', 'fullname', 'is_active', 'date_of_birthday', 'gender', 'phone_number', 'avatar', 'email',
-            'date_joined', 'role', 'password', 'region', 'district', 'address', 'avatar', 'companies')
+            'date_joined', 'roles', 'password', 'region', 'district', 'address', 'avatar', 'companies')
         extra_kwargs = {
             'username': {
                 'validators': [UnicodeUsernameValidator(), UniqueValidator(queryset=User.objects.all())],
@@ -75,6 +81,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # ManyToMany va parolni alohida olib qo'yamiz
         companies = validated_data.pop('companies', [])
+        roles_ids = validated_data.pop('roles', [])
         password = validated_data.pop('password', None)
 
         user = User(**validated_data)
@@ -91,11 +98,15 @@ class UserSerializer(serializers.ModelSerializer):
         if companies:
             user.companies.set(companies)
 
+        if roles_ids:
+            user.roles.set(roles_ids)
+
         return user
 
     def update(self, instance, validated_data):
         # ManyToMany maydon va parolni alohida ajratamiz
         companies = validated_data.pop('companies', None)
+        roles_ids = validated_data.pop('roles', None)
         password = validated_data.pop('password', None)
 
         # Oddiy fieldlarni umumiy tarzda set qilamiz
@@ -115,20 +126,24 @@ class UserSerializer(serializers.ModelSerializer):
         if companies is not None:
             instance.companies.set(companies)
 
+        if roles_ids is not None:
+            instance.roles.set(roles_ids)
+
         return instance
 
 
 class UserListPublicSerializer(serializers.ModelSerializer):
-    roles = RoleSerializer(source='role', read_only=True)
+    # roles = RoleSerializer(source='role', read_only=True)
     region_detail = RegionListSerializer(source='region', read_only=True)
     district_detail = DistrictSerializer(source='district', read_only=True)
     companies_detail = CompanyListSerializer(source='companies', many=True, read_only=True)
+    roles_detail = RoleSerializer(source='roles', many=True, read_only=True)
 
     class Meta:
         model = User
         fields = (
             'id', 'username', 'fullname', 'is_active', 'date_of_birthday', 'gender', 'phone_number', 'avatar', 'email',
-            'date_joined', 'role', 'roles', 'password', 'region', 'region_detail', 'district', 'district_detail', 'address',
+            'date_joined', 'roles', 'roles_detail', 'password', 'region', 'region_detail', 'district', 'district_detail', 'address',
             'avatar', 'companies', 'companies_detail')
 
 
@@ -141,14 +156,14 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class UserListSerializer(serializers.ModelSerializer):
-    roles = RoleSerializer(source='role', read_only=True)
+    role_detail = RoleSerializer(source='roles', many=True, read_only=True)
     companies_detail = CompanyListSerializer(source='companies', many=True, read_only=True)
 
     class Meta:
         model = User
         fields = (
             'id', 'username', 'fullname', 'is_active', 'date_of_birthday', 'gender', 'phone_number', 'avatar', 'email',
-            'date_joined', 'role', 'roles', 'password', 'region', 'district', 'address', 'avatar', 'companies', 'companies_detail')
+            'date_joined', 'roles', 'role_detail', 'password', 'region', 'district', 'address', 'avatar', 'companies', 'companies_detail')
 
 
 class RelatedUserSerializer(serializers.ModelSerializer):

@@ -72,8 +72,9 @@ class User(AbstractUser):
                                help_text=_("Viloyat"))
     district = models.ForeignKey("directory.District", related_name='user_district', on_delete=models.SET_NULL,
                                  null=True, help_text=_("Tuman"))
-    role = models.ForeignKey(Role, related_name='role_user', null=True, on_delete=models.SET_NULL,
-                             help_text=_("Foydalanuvchi roli"))
+    # role = models.ForeignKey(Role, related_name='role_user', null=True, on_delete=models.SET_NULL,
+    #                          help_text=_("Foydalanuvchi roli"))
+    roles = models.ManyToManyField(Role, related_name='users', blank=True, help_text=_("Foydalanuvchi rollari"))
     address = models.TextField(_("Address"), null=True, help_text=_("Yashash manzili"))
     created_time = models.DateTimeField(auto_now_add=True, help_text=_("Yaratilgan vaqt"))
     updated_time = models.DateTimeField(auto_now=True, help_text=_("Yangilangan vaqt"))
@@ -94,7 +95,8 @@ class User(AbstractUser):
         return str(self.pk)
 
     def is_admin(self) -> bool:
-        return self.role and self.role.name == 'Administrator'
+        # oldingi: return self.role and self.role.name == 'Super Admin'
+        return self.roles.filter(name__iexact='Admin').exists()
 
 
 class AppModule(models.Model):

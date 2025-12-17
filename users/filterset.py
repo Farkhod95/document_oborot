@@ -11,7 +11,7 @@ class UserFilter(FilterSet):
             'username': ['exact', 'startswith', 'contains'],
             'fullname': ['exact'],
             'gender': ['exact'],
-            'role': ['exact'],
+            'roles': ['exact'],
             'region': ['exact'],
             'district': ['exact'],
             'companies': ['exact'],
