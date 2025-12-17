@@ -156,6 +156,11 @@ class TaskPartSerializer(LocaleSerializer):
         )
 
 
+class TaskWithPartsSerializer(serializers.Serializer):
+    task = TaskSerializer()
+    parts = TaskPartSerializer(many=True)
+
+
 class TaskEventSerializer(LocaleSerializer):
     task_detail = TaskShortSerializer(source='task', read_only=True)
     part_detail = TaskPartShortSerializer(source='part', read_only=True)

@@ -11,6 +11,7 @@ from docoborot.views.task_comment import TaskCommentView, TaskCommentDetailView,
 from docoborot.views.task_event import TaskEventView, TaskEventDetailView, TaskEventFieldInfoView
 from docoborot.views.task_part import TaskPartView, TaskPartDetailView, TaskPartFieldInfoView
 from docoborot.views.task_part_stats_by import TaskPartStatsByStartDateView
+from docoborot.views.task_with_parts_by_id import TaskWithPartsByIdView
 
 urlpatterns = [
 
@@ -18,6 +19,7 @@ urlpatterns = [
     re_path(r'^task/$', TaskView.as_view(), name='task_view'),
     path('task/<int:pk>', TaskDetailView.as_view(), name='task_detail_view'),
     path('task/fields/', TaskFieldInfoView.as_view(), name='task_fields_info'),
+    path('tasks/with-parts/by-id/', TaskWithPartsByIdView.as_view(), name='task-with-parts-by-id'),
 
     # TASK PART
     re_path(r'^task-part/$', TaskPartView.as_view(), name='task_part_view'),
