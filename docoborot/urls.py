@@ -6,6 +6,8 @@ from docoborot.views.dashboard_report import CompanyDashboardStatsView
 from docoborot.views.reply_letter import ReplyLetterView, ReplyLetterDetailView, ReplyLetterFieldInfoView
 from docoborot.views.reply_letter_file import ReplyLetterFileView, ReplyLetterFileDetailView, \
     ReplyLetterFileFieldInfoView
+from docoborot.views.report_employees import CompanyEmployeesReportView
+from docoborot.views.report_organizations import OrganizationsReportView
 from docoborot.views.task import TaskView, TaskDetailView, TaskFieldInfoView
 from docoborot.views.task_attachment import TaskAttachmentView, TaskAttachmentDetailView, TaskAttachmentFieldInfoView
 from docoborot.views.task_comment import TaskCommentView, TaskCommentDetailView, TaskCommentFieldInfoView
@@ -61,4 +63,6 @@ urlpatterns = [
 
 
     path("dashboard/stats/", CompanyDashboardStatsView.as_view(), name="dashboard-stats"),
+    path('reports/employees/', CompanyEmployeesReportView.as_view(), name='report-employees'),
+    path('reports/organizations/', OrganizationsReportView.as_view(), name='report-organizations'),
 ]

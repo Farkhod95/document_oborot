@@ -52,7 +52,7 @@ class CompanyDashboardStatsView(APIView):
         return m
 
     def post(self, request, *args, **kwargs):
-        company_id = request.data.get("company_id")
+        company_id = request.data.get("company")
         year = request.data.get("year", None)
 
         # -------- validate company_id --------
