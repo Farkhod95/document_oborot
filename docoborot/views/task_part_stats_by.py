@@ -28,7 +28,7 @@ class TaskPartStatsByStartDateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        company_id = request.data.get('company_id')
+        company_id = request.data.get('company')
         year = request.data.get('year')
         month = request.data.get('month', None)
         status_param = request.data.get('status', None)
