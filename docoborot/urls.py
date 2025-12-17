@@ -23,7 +23,7 @@ urlpatterns = [
     re_path(r'^task-part/$', TaskPartView.as_view(), name='task_part_view'),
     path('task-part/<int:pk>', TaskPartDetailView.as_view(), name='task_part_detail_view'),
     path('task-part/fields/', TaskPartFieldInfoView.as_view(), name='task_part_fields_info'),
-    path('task-parts/stats/by-start-date/', TaskPartStatsByStartDateView.as_view(), name='task-part-stats-by-start-date'),
+    path('task-calendar/stats/by-start-date/', TaskPartStatsByStartDateView.as_view(), name='task-part-stats-by-start-date'),
 
     # TASK EVENT (LOG)
     re_path(r'^task-event/$', TaskEventView.as_view(), name='task_event_view'),
