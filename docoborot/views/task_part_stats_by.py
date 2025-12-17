@@ -5,6 +5,9 @@ from rest_framework import status as drf_status
 from rest_framework.permissions import IsAuthenticated
 
 from docoborot.models import TaskPart
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class TaskPartStatsByStartDateView(APIView):
@@ -13,9 +16,10 @@ class TaskPartStatsByStartDateView(APIView):
       - year: int (majburiy)
       - month: int (ixtiyoriy, 1-12)
       - status: str (ixtiyoriy) -> TaskPart.STATUS qiymatlaridan biri
+      - assignee_id: int (ixtiyoriy) -> User ID
 
     Qaytaradi:
-      - Umumiy: year, month, status, total, by_status
+      - Umumiy: year, month, status, assignee_id, total, by_status
       - start_date bo‘yicha gruppa: by_start_date (har bir sanada statuslar kesimida count)
     """
     permission_classes = [IsAuthenticated]  # kerak bo'lsa NotClientUser ga almashtiring
@@ -24,6 +28,7 @@ class TaskPartStatsByStartDateView(APIView):
         year = request.data.get('year')
         month = request.data.get('month', None)
         status_param = request.data.get('status', None)
+        assignee_id = request.data.get('assignee_id', None)
 
         # -------------------- validation: year --------------------
         try:
@@ -65,6 +70,24 @@ class TaskPartStatsByStartDateView(APIView):
         else:
             status_param = None
 
+        # -------------------- validation: assignee_id (optional) --------------------
+        if assignee_id is not None and assignee_id != "":
+            try:
+                assignee_id = int(assignee_id)
+            except (TypeError, ValueError):
+                return Response(
+                    {"detail": "`assignee_id` integer bo‘lishi kerak."},
+                    status=drf_status.HTTP_400_BAD_REQUEST
+                )
+            # ixtiyoriy: mavjud user ekanini tekshirish
+            if not User.objects.filter(id=assignee_id).exists():
+                return Response(
+                    {"detail": "Berilgan `assignee_id` bo‘yicha user topilmadi."},
+                    status=drf_status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            assignee_id = None
+
         # -------------------- base queryset --------------------
         qs = TaskPart.objects.filter(
             start_date__isnull=False,
@@ -75,6 +98,9 @@ class TaskPartStatsByStartDateView(APIView):
 
         if status_param is not None:
             qs = qs.filter(status=status_param)
+
+        if assignee_id is not None:
+            qs = qs.filter(assignee_id=assignee_id)
 
         # -------------------- overall by_status --------------------
         overall_rows = (
@@ -126,11 +152,12 @@ class TaskPartStatsByStartDateView(APIView):
         return Response(
             {
                 "year": year,
-                "month": month,                 # None bo‘lishi mumkin
-                "status": status_param,         # None bo‘lishi mumkin
+                "month": month,                  # None bo‘lishi mumkin
+                "status": status_param,          # None bo‘lishi mumkin
+                "assignee_id": assignee_id,      # None bo‘lishi mumkin
                 "total": total,
-                "by_status": by_status,         # umumiy status kesimida (filter bo'lsa ham 0 bilan to'liq)
-                "by_start_date": by_start_date, # start_date bo‘yicha gruppalab
+                "by_status": by_status,
+                "by_start_date": by_start_date,
             },
             status=drf_status.HTTP_200_OK
         )
