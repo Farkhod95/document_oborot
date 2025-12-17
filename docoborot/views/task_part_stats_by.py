@@ -4,9 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status as drf_status
 from rest_framework.permissions import IsAuthenticated
 
-from docoborot.models import TaskPart
-from users.models import Company  # Company qayerda bo'lsa shu importni qo'ying
 from django.contrib.auth import get_user_model
+from docoborot.models import TaskPart
+from users.models import Company  # Company qayerda bo‘lsa shu importni qo‘ying
 
 User = get_user_model()
 
@@ -17,95 +17,80 @@ class TaskPartStatsByStartDateView(APIView):
       - company_id: int (majburiy)
       - year: int (majburiy)
       - month: int (ixtiyoriy, 1-12)
-      - status: str (ixtiyoriy) -> TaskPart.STATUS qiymatlaridan biri
-      - assignee_id: int (ixtiyoriy) -> User ID
+      - status: str (ixtiyoriy)
+      - assignee_id: int (ixtiyoriy)
 
     Qaytaradi:
-      - Umumiy: company_id, year, month, status, assignee_id, total, by_status
-      - start_date bo‘yicha gruppa: by_start_date (har bir sanada statuslar kesimida count)
+      - total
+      - by_status: faqat mavjud statuslar
+      - by_start_date: har sanada faqat mavjud statuslar
     """
-    permission_classes = [IsAuthenticated]  # kerak bo'lsa NotClientUser ga almashtiring
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        company_id = request.data.get('company')
+        company_id = request.data.get('company_id')
         year = request.data.get('year')
         month = request.data.get('month', None)
         status_param = request.data.get('status', None)
         assignee_id = request.data.get('assignee_id', None)
 
-        # -------------------- validation: company_id (required) --------------------
+        # company_id
         try:
             company_id = int(company_id)
         except (TypeError, ValueError):
-            return Response(
-                {"detail": "`company_id` majburiy va integer bo‘lishi kerak."},
-                status=drf_status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"detail": "`company_id` majburiy va integer bo‘lishi kerak."},
+                            status=drf_status.HTTP_400_BAD_REQUEST)
 
         if not Company.objects.filter(id=company_id).exists():
-            return Response(
-                {"detail": "Berilgan `company_id` bo‘yicha kompaniya topilmadi."},
-                status=drf_status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"detail": "Berilgan `company_id` bo‘yicha kompaniya topilmadi."},
+                            status=drf_status.HTTP_400_BAD_REQUEST)
 
-        # -------------------- validation: year (required) --------------------
+        # year
         try:
             year = int(year)
         except (TypeError, ValueError):
-            return Response(
-                {"detail": "`year` majburiy va integer bo‘lishi kerak. Masalan: 2025"},
-                status=drf_status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"detail": "`year` majburiy va integer bo‘lishi kerak. Masalan: 2025"},
+                            status=drf_status.HTTP_400_BAD_REQUEST)
 
-        # -------------------- validation: month (optional) --------------------
+        # month (optional)
         if month is not None and month != "":
             try:
                 month = int(month)
             except (TypeError, ValueError):
-                return Response(
-                    {"detail": "`month` integer bo‘lishi kerak. Masalan: 12"},
-                    status=drf_status.HTTP_400_BAD_REQUEST
-                )
+                return Response({"detail": "`month` integer bo‘lishi kerak. Masalan: 12"},
+                                status=drf_status.HTTP_400_BAD_REQUEST)
             if not (1 <= month <= 12):
-                return Response(
-                    {"detail": "`month` 1..12 oraliqda bo‘lishi kerak."},
-                    status=drf_status.HTTP_400_BAD_REQUEST
-                )
+                return Response({"detail": "`month` 1..12 oraliqda bo‘lishi kerak."},
+                                status=drf_status.HTTP_400_BAD_REQUEST)
         else:
             month = None
 
-        # -------------------- validation: status (optional) --------------------
+        # status (optional)
         if status_param is not None and status_param != "":
-            allowed_statuses = {code for code, _ in TaskPart.STATUS.choices}
-            if status_param not in allowed_statuses:
+            allowed = {code for code, _ in TaskPart.STATUS.choices}
+            if status_param not in allowed:
                 return Response(
-                    {
-                        "detail": "`status` noto‘g‘ri. Ruxsat etilgan qiymatlar:",
-                        "allowed": sorted(list(allowed_statuses)),
-                    },
+                    {"detail": "`status` noto‘g‘ri.", "allowed": sorted(list(allowed))},
                     status=drf_status.HTTP_400_BAD_REQUEST
                 )
         else:
             status_param = None
 
-        # -------------------- validation: assignee_id (optional) --------------------
+        # assignee_id (optional)
         if assignee_id is not None and assignee_id != "":
             try:
                 assignee_id = int(assignee_id)
             except (TypeError, ValueError):
-                return Response(
-                    {"detail": "`assignee_id` integer bo‘lishi kerak."},
-                    status=drf_status.HTTP_400_BAD_REQUEST
-                )
+                return Response({"detail": "`assignee_id` integer bo‘lishi kerak."},
+                                status=drf_status.HTTP_400_BAD_REQUEST)
+
             if not User.objects.filter(id=assignee_id).exists():
-                return Response(
-                    {"detail": "Berilgan `assignee_id` bo‘yicha user topilmadi."},
-                    status=drf_status.HTTP_400_BAD_REQUEST
-                )
+                return Response({"detail": "Berilgan `assignee_id` bo‘yicha user topilmadi."},
+                                status=drf_status.HTTP_400_BAD_REQUEST)
         else:
             assignee_id = None
 
-        # -------------------- base queryset (+ company filter) --------------------
+        # queryset (company_id filter majburiy)
         qs = TaskPart.objects.filter(
             task__company_id=company_id,
             start_date__isnull=False,
@@ -121,60 +106,45 @@ class TaskPartStatsByStartDateView(APIView):
         if assignee_id is not None:
             qs = qs.filter(assignee_id=assignee_id)
 
-        # -------------------- overall by_status --------------------
-        overall_rows = (
-            qs.values('status')
-              .annotate(count=Count('id'))
-              .order_by('status')
-        )
-        overall_map = {r["status"]: int(r["count"]) for r in overall_rows}
-
+        # overall by_status (faqat mavjudlari)
+        overall_rows = qs.values('status').annotate(count=Count('id')).order_by('status')
         total = 0
-        by_status = {}
-        for code, label in TaskPart.STATUS.choices:
-            c = overall_map.get(code, 0)
-            total += c
-            by_status[code] = {"label": str(label), "count": c}
+        by_status = []
+        for r in overall_rows:
+            total += int(r["count"])
+            by_status.append({"status": r["status"], "count": int(r["count"])})
 
-        # -------------------- group by start_date + status --------------------
+        # group by start_date + status (faqat mavjudlari)
         date_status_rows = (
             qs.values('start_date', 'status')
               .annotate(count=Count('id'))
               .order_by('start_date', 'status')
         )
 
-        grouped = {}  # {date_obj: {status_code: count}}
+        grouped = {}  # {"YYYY-MM-DD": [{"status": "...", "count": n}, ...]}
+        totals_by_date = {}  # {"YYYY-MM-DD": total}
+
         for r in date_status_rows:
-            d = r["start_date"]
-            s = r["status"]
-            c = int(r["count"])
-            grouped.setdefault(d, {})
-            grouped[d][s] = c
+            d = r["start_date"].isoformat()
+            grouped.setdefault(d, [])
+            grouped[d].append({"status": r["status"], "count": int(r["count"])})
+            totals_by_date[d] = totals_by_date.get(d, 0) + int(r["count"])
 
         by_start_date = []
         for d in sorted(grouped.keys()):
-            status_counts = grouped[d]
-            day_total = 0
-            day_by_status = {}
-
-            for code, label in TaskPart.STATUS.choices:
-                c = int(status_counts.get(code, 0))
-                day_total += c
-                day_by_status[code] = {"label": str(label), "count": c}
-
             by_start_date.append({
-                "start_date": d.isoformat(),  # "YYYY-MM-DD"
-                "total": day_total,
-                "by_status": day_by_status,
+                "start_date": d,
+                "total": totals_by_date.get(d, 0),
+                "by_status": grouped[d],
             })
 
         return Response(
             {
                 "company_id": company_id,
                 "year": year,
-                "month": month,            # None bo‘lishi mumkin
-                "status": status_param,    # None bo‘lishi mumkin
-                "assignee_id": assignee_id,# None bo‘lishi mumkin
+                "month": month,
+                "status": status_param,
+                "assignee_id": assignee_id,
                 "total": total,
                 "by_status": by_status,
                 "by_start_date": by_start_date,
