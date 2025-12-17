@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from docoborot.models import TaskPart
 
 
-class TaskPartStatsGroupedByStartDateView(APIView):
+class TaskPartStatsByStartDateView(APIView):
     """
     POST:
       - year: int (majburiy)

@@ -10,6 +10,7 @@ from docoborot.views.task_attachment import TaskAttachmentView, TaskAttachmentDe
 from docoborot.views.task_comment import TaskCommentView, TaskCommentDetailView, TaskCommentFieldInfoView
 from docoborot.views.task_event import TaskEventView, TaskEventDetailView, TaskEventFieldInfoView
 from docoborot.views.task_part import TaskPartView, TaskPartDetailView, TaskPartFieldInfoView
+from docoborot.views.task_part_stats_by import TaskPartStatsByStartDateView
 
 urlpatterns = [
 
