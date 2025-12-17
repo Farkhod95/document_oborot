@@ -19,7 +19,7 @@ urlpatterns = [
     re_path(r'^task/$', TaskView.as_view(), name='task_view'),
     path('task/<int:pk>', TaskDetailView.as_view(), name='task_detail_view'),
     path('task/fields/', TaskFieldInfoView.as_view(), name='task_fields_info'),
-    path('tasks/with-parts/by-id/', TaskWithPartsByIdView.as_view(), name='task-with-parts-by-id'),
+    path('task/with-parts/by-id/', TaskWithPartsByIdView.as_view(), name='task-with-parts-by-id'),
 
     # TASK PART
     re_path(r'^task-part/$', TaskPartView.as_view(), name='task_part_view'),
