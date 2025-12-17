@@ -5,6 +5,7 @@ from rest_framework import status as drf_status
 from rest_framework.permissions import IsAuthenticated
 
 from docoborot.models import TaskPart
+from users.models import Company  # Company qayerda bo'lsa shu importni qo'ying
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -13,24 +14,41 @@ User = get_user_model()
 class TaskPartStatsByStartDateView(APIView):
     """
     POST:
+      - company_id: int (majburiy)
       - year: int (majburiy)
       - month: int (ixtiyoriy, 1-12)
       - status: str (ixtiyoriy) -> TaskPart.STATUS qiymatlaridan biri
       - assignee_id: int (ixtiyoriy) -> User ID
 
     Qaytaradi:
-      - Umumiy: year, month, status, assignee_id, total, by_status
+      - Umumiy: company_id, year, month, status, assignee_id, total, by_status
       - start_date bo‘yicha gruppa: by_start_date (har bir sanada statuslar kesimida count)
     """
     permission_classes = [IsAuthenticated]  # kerak bo'lsa NotClientUser ga almashtiring
 
     def post(self, request, *args, **kwargs):
+        company_id = request.data.get('company')
         year = request.data.get('year')
         month = request.data.get('month', None)
         status_param = request.data.get('status', None)
         assignee_id = request.data.get('assignee_id', None)
 
-        # -------------------- validation: year --------------------
+        # -------------------- validation: company_id (required) --------------------
+        try:
+            company_id = int(company_id)
+        except (TypeError, ValueError):
+            return Response(
+                {"detail": "`company_id` majburiy va integer bo‘lishi kerak."},
+                status=drf_status.HTTP_400_BAD_REQUEST
+            )
+
+        if not Company.objects.filter(id=company_id).exists():
+            return Response(
+                {"detail": "Berilgan `company_id` bo‘yicha kompaniya topilmadi."},
+                status=drf_status.HTTP_400_BAD_REQUEST
+            )
+
+        # -------------------- validation: year (required) --------------------
         try:
             year = int(year)
         except (TypeError, ValueError):
@@ -79,7 +97,6 @@ class TaskPartStatsByStartDateView(APIView):
                     {"detail": "`assignee_id` integer bo‘lishi kerak."},
                     status=drf_status.HTTP_400_BAD_REQUEST
                 )
-            # ixtiyoriy: mavjud user ekanini tekshirish
             if not User.objects.filter(id=assignee_id).exists():
                 return Response(
                     {"detail": "Berilgan `assignee_id` bo‘yicha user topilmadi."},
@@ -88,11 +105,13 @@ class TaskPartStatsByStartDateView(APIView):
         else:
             assignee_id = None
 
-        # -------------------- base queryset --------------------
+        # -------------------- base queryset (+ company filter) --------------------
         qs = TaskPart.objects.filter(
+            task__company_id=company_id,
             start_date__isnull=False,
             start_date__year=year,
         )
+
         if month is not None:
             qs = qs.filter(start_date__month=month)
 
@@ -144,17 +163,18 @@ class TaskPartStatsByStartDateView(APIView):
                 day_by_status[code] = {"label": str(label), "count": c}
 
             by_start_date.append({
-                "start_date": d.isoformat(),   # "YYYY-MM-DD"
+                "start_date": d.isoformat(),  # "YYYY-MM-DD"
                 "total": day_total,
                 "by_status": day_by_status,
             })
 
         return Response(
             {
+                "company_id": company_id,
                 "year": year,
-                "month": month,                  # None bo‘lishi mumkin
-                "status": status_param,          # None bo‘lishi mumkin
-                "assignee_id": assignee_id,      # None bo‘lishi mumkin
+                "month": month,            # None bo‘lishi mumkin
+                "status": status_param,    # None bo‘lishi mumkin
+                "assignee_id": assignee_id,# None bo‘lishi mumkin
                 "total": total,
                 "by_status": by_status,
                 "by_start_date": by_start_date,
