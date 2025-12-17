@@ -2,6 +2,7 @@ from django.urls import re_path, path
 
 from docoborot.views.command import CommandView, CommandDetailView, CommandFieldInfoView
 from docoborot.views.command_file import CommandFileView, CommandFileDetailView, CommandFileFieldInfoView
+from docoborot.views.dashboard_report import CompanyDashboardStatsView
 from docoborot.views.reply_letter import ReplyLetterView, ReplyLetterDetailView, ReplyLetterFieldInfoView
 from docoborot.views.reply_letter_file import ReplyLetterFileView, ReplyLetterFileDetailView, \
     ReplyLetterFileFieldInfoView
@@ -57,4 +58,7 @@ urlpatterns = [
     re_path(r'^reply-letter-file/$', ReplyLetterFileView.as_view(), name='reply_letter_file_view'),
     path('reply-letter-file/<int:pk>', ReplyLetterFileDetailView.as_view(), name='reply_letter_file_detail_view'),
     path('reply-letter-file/fields/', ReplyLetterFileFieldInfoView.as_view(), name='reply_letter_file_fields_info'),
+
+
+    path("dashboard/stats/", CompanyDashboardStatsView.as_view(), name="dashboard-stats"),
 ]
