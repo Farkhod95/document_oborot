@@ -5,6 +5,7 @@ from rest_framework import status as drf_status
 from rest_framework.permissions import IsAuthenticated
 
 from django.contrib.auth import get_user_model
+
 from docoborot.models import TaskPart
 from users.models import Company  # Company qayerda bo‘lsa shu importni qo‘ying
 
@@ -17,24 +18,19 @@ class TaskPartStatsByStartDateView(APIView):
       - company_id: int (majburiy)
       - year: int (majburiy)
       - month: int (ixtiyoriy, 1-12)
-      - status: str (ixtiyoriy)
-      - assignee_id: int (ixtiyoriy)
-
-    Qaytaradi:
-      - total
-      - by_status: faqat mavjud statuslar
-      - by_start_date: har sanada faqat mavjud statuslar
+      - status: str (ixtiyoriy) -> TaskPart.STATUS qiymatlaridan biri
+      - assignee_id: int (ixtiyoriy) -> User ID
     """
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        company_id = request.data.get('company')
+        company_id = request.data.get('company_id')
         year = request.data.get('year')
         month = request.data.get('month', None)
         status_param = request.data.get('status', None)
         assignee_id = request.data.get('assignee_id', None)
 
-        # company_id
+        # -------- company_id (required) --------
         try:
             company_id = int(company_id)
         except (TypeError, ValueError):
@@ -45,14 +41,14 @@ class TaskPartStatsByStartDateView(APIView):
             return Response({"detail": "Berilgan `company_id` bo‘yicha kompaniya topilmadi."},
                             status=drf_status.HTTP_400_BAD_REQUEST)
 
-        # year
+        # -------- year (required) --------
         try:
             year = int(year)
         except (TypeError, ValueError):
             return Response({"detail": "`year` majburiy va integer bo‘lishi kerak. Masalan: 2025"},
                             status=drf_status.HTTP_400_BAD_REQUEST)
 
-        # month (optional)
+        # -------- month (optional) --------
         if month is not None and month != "":
             try:
                 month = int(month)
@@ -65,7 +61,7 @@ class TaskPartStatsByStartDateView(APIView):
         else:
             month = None
 
-        # status (optional)
+        # -------- status (optional) --------
         if status_param is not None and status_param != "":
             allowed = {code for code, _ in TaskPart.STATUS.choices}
             if status_param not in allowed:
@@ -76,7 +72,7 @@ class TaskPartStatsByStartDateView(APIView):
         else:
             status_param = None
 
-        # assignee_id (optional)
+        # -------- assignee_id (optional) --------
         if assignee_id is not None and assignee_id != "":
             try:
                 assignee_id = int(assignee_id)
@@ -90,12 +86,13 @@ class TaskPartStatsByStartDateView(APIView):
         else:
             assignee_id = None
 
-        # queryset (company_id filter majburiy)
-        qs = TaskPart.objects.filter(
-            task__company_id=company_id,
-            start_date__isnull=False,
-            start_date__year=year,
-        )
+        # =========================================================
+        # MUHIM: TaskPart hammasi company_id bo‘yicha FILTER
+        # =========================================================
+        qs = TaskPart.objects.filter(task__company_id=company_id)
+
+        # keyin qolgan ixtiyoriy filterlar
+        qs = qs.filter(start_date__isnull=False, start_date__year=year)
 
         if month is not None:
             qs = qs.filter(start_date__month=month)
@@ -106,36 +103,46 @@ class TaskPartStatsByStartDateView(APIView):
         if assignee_id is not None:
             qs = qs.filter(assignee_id=assignee_id)
 
-        # overall by_status (faqat mavjudlari)
+        # -------- overall by_status --------
         overall_rows = qs.values('status').annotate(count=Count('id')).order_by('status')
-        total = 0
-        by_status = []
-        for r in overall_rows:
-            total += int(r["count"])
-            by_status.append({"status": r["status"], "count": int(r["count"])})
+        overall_map = {r["status"]: int(r["count"]) for r in overall_rows}
 
-        # group by start_date + status (faqat mavjudlari)
+        total = 0
+        by_status = {}
+        for code, label in TaskPart.STATUS.choices:
+            c = overall_map.get(code, 0)
+            total += c
+            by_status[code] = {"label": str(label), "count": c}
+
+        # -------- group by start_date + status --------
         date_status_rows = (
             qs.values('start_date', 'status')
               .annotate(count=Count('id'))
               .order_by('start_date', 'status')
         )
 
-        grouped = {}  # {"YYYY-MM-DD": [{"status": "...", "count": n}, ...]}
-        totals_by_date = {}  # {"YYYY-MM-DD": total}
-
+        grouped = {}
         for r in date_status_rows:
-            d = r["start_date"].isoformat()
-            grouped.setdefault(d, [])
-            grouped[d].append({"status": r["status"], "count": int(r["count"])})
-            totals_by_date[d] = totals_by_date.get(d, 0) + int(r["count"])
+            d = r["start_date"]
+            s = r["status"]
+            grouped.setdefault(d, {})
+            grouped[d][s] = int(r["count"])
 
         by_start_date = []
         for d in sorted(grouped.keys()):
+            status_counts = grouped[d]
+            day_total = 0
+            day_by_status = {}
+
+            for code, label in TaskPart.STATUS.choices:
+                c = int(status_counts.get(code, 0))
+                day_total += c
+                day_by_status[code] = {"label": str(label), "count": c}
+
             by_start_date.append({
-                "start_date": d,
-                "total": totals_by_date.get(d, 0),
-                "by_status": grouped[d],
+                "start_date": d.isoformat(),
+                "total": day_total,
+                "by_status": day_by_status,
             })
 
         return Response(
