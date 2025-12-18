@@ -33,6 +33,7 @@ class TaskPartFilter(FilterSet):
             'title': ['exact', 'icontains'],
             'start_date': ['exact', 'gte', 'lte'],
             'end_date': ['exact', 'gte', 'lte'],
+            'show_date': ['exact', 'gte', 'lte'],
         }
 
 

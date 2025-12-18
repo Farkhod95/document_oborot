@@ -4,6 +4,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.utils import timezone
 
 from docoborot.models import TaskPart
 from docoborot.serializers import TaskPartSerializer
@@ -67,6 +68,24 @@ class TaskPartDetailView(RetrieveUpdateDestroyAPIView):
 
     def get(self, request, pk):
         instance = get_object_or_404(TaskPart, id=pk)
+
+        # ✅ Agar zapros yuboruvchi assignee bo'lsa va status NEW bo'lsa -> IN_PROGRESS
+        if instance.assignee_id == request.user.id and instance.status == TaskPart.STATUS.NEW:
+            instance.status = TaskPart.STATUS.IN_PROGRESS
+
+            # ixtiyoriy: birinchi ko‘rish vaqtini yozib qo‘yish
+            if not instance.show_date:
+                instance.show_date = timezone.now()
+
+            # kim update qilganini yozib qo‘yamiz
+            instance.updated_by = request.user
+
+            # model save() ichidagi log + recompute_status ishlashi uchun .save() chaqiramiz
+            instance.save(
+                actor=request.user,
+                update_fields=["status", "show_date", "updated_by", "updated_time"],
+            )
+
         serializer = TaskPartSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

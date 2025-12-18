@@ -103,6 +103,7 @@ class TaskPart(BaseModel):
     start_date = models.DateField(_('Start date'), null=True, blank=True, help_text=_("Boshlash sanasi"))
     end_date = models.DateField(_('End date'), null=True, blank=True, help_text=_("Tugash sanasi"))
     status = models.CharField(choices=STATUS.choices, max_length=20, default=STATUS.NEW, help_text=_("Holati"))
+    show_date = models.DateTimeField(_('Show date'), null=True, blank=True, help_text=_("Ko'rish vaqti sanasi"))
     note = models.TextField(blank=True, help_text=_("Izoh"))
 
     class Meta:
