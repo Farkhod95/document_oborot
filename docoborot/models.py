@@ -44,6 +44,7 @@ class Task(BaseModel):
     department = models.ForeignKey(Department, related_name='tasks', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Bo‘lim"))
     list_of_magazine = models.ForeignKey(ListOfMagazine, related_name='list_of_magazine_task', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Jurnal nomi"))
     signed_by = models.ForeignKey(User, related_name='tasks_signed_by', on_delete=models.CASCADE, null=True, blank=True, verbose_name=_('Imzolovchi'))
+    signed_date = models.DateField(_('Signed date'), null=True, blank=True, help_text=_("Imzolangan sanasi"))
     note = models.TextField(_('Note'), blank=True, help_text=_("Izoh"))
 
     class Meta:

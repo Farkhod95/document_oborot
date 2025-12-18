@@ -18,6 +18,7 @@ class TaskFilter(FilterSet):
             'name': ['exact', 'icontains'],
             'start_date': ['exact', 'gte', 'lte'],
             'end_date': ['exact', 'gte', 'lte'],
+            'signed_date': ['exact', 'gte', 'lte'],
         }
 
 

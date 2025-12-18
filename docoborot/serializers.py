@@ -137,7 +137,7 @@ class TaskSerializer(LocaleSerializer):
             'id', 'status', 'company', 'company_detail', 'type', 'name',
             'task_form', 'task_form_detail', 'sending_org', 'input_doc_number', 'output_doc_number',
             'start_date', 'end_date', 'priority', 'sending_respon_person',
-            'department', 'department_detail', 'signed_by', 'signed_by_detail', 'note',
+            'department', 'department_detail', 'signed_by', 'signed_by_detail', 'signed_date', 'note',
             'created_time', 'updated_time', 'created_by', 'updated_by', 'list_of_magazine', 'list_of_magazine_detail'
         )
 
