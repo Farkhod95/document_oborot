@@ -4,7 +4,8 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from directory.serializers import RegionListSerializer, DistrictSerializer, CountrySerializer, DistrictListSerializer
+from directory.serializers import RegionListSerializer, DistrictSerializer, CountrySerializer, DistrictListSerializer, \
+    CountryListSerializer
 
 from .models import User, Role, AppModule, Company
 
@@ -31,7 +32,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        fields = ('id', 'code', 'name', 'is_active', 'phone', 'region', 'district', 'address', 'created_time', 'created_by', 'logo')
+        fields = ('id', 'code', 'name', 'is_active', 'phone', 'country', 'region', 'district', 'address', 'created_time', 'created_by', 'logo')
         extra_kwargs = {
             'code': {"required": True},
             'name': {"required": True},
@@ -39,12 +40,13 @@ class CompanySerializer(serializers.ModelSerializer):
 
 
 class CompanyListSerializer(serializers.ModelSerializer):
+    country_detail = CountryListSerializer(source='country', read_only=True)
     region_detail = RegionListSerializer(source='region', read_only=True)
     district_detail = DistrictListSerializer(source='district', read_only=True)
 
     class Meta:
         model = Company
-        fields = ('id', 'code', 'name', 'is_active', 'phone', 'region', 'region_detail', 'district', 'district_detail',
+        fields = ('id', 'code', 'name', 'is_active', 'phone', 'country', 'country_detail', 'region', 'region_detail', 'district', 'district_detail',
                   'address', 'created_time', 'created_by', 'logo')
 
 
