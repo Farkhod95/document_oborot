@@ -259,6 +259,7 @@ class CommandFile(BaseModel):
 class ReplyLetter(BaseModel):
     company = models.ForeignKey(Company, related_name='company_letter', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Kompaniya"))
     task = models.ForeignKey(Task, related_name='task_letter', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Vazifalar"))
+    organization = models.CharField(_('Organization'), max_length=100, null=True, blank=True,  help_text=_("Chiquvchi tashkilot"))
     letter_number = models.CharField(_('Order number'), max_length=100, null=True, blank=True, help_text=_("Buyruq raqami"))
     responsible_person = models.ForeignKey(User, related_name='carts', on_delete=models.CASCADE, verbose_name=_('Foydalanuvchi'))
     basis = models.CharField(_('Basis '), max_length=255, null=True, blank=True, help_text=_("Hujjat uchun asos"))

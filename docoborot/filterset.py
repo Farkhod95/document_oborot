@@ -98,6 +98,7 @@ class ReplyLetterFilter(FilterSet):
             'company': ['exact'],
             'task': ['exact'],
             'letter_number': ['exact'],
+            'organization': ['exact'],
             'responsible_person': ['exact'],
         }
 

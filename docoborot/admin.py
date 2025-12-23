@@ -27,9 +27,9 @@ class ReplyLetterAdmin(admin.ModelAdmin):
 
 @admin.register(ReplyLetterFile)
 class ReplyLetterFileAdmin(admin.ModelAdmin):
-    list_display = ('reply_letter', 'title',)
-    fields =  ('reply_letter', 'title', 'file')
-    search_fields = ('reply_letter__letter_number', 'title')
+    list_display = ('reply_letter', 'title', 'organization')
+    fields =  ('reply_letter', 'title', 'file', 'organization')
+    search_fields = ('reply_letter__letter_number', 'title', 'organization')
 
 
 @admin.register(TaskAttachment)

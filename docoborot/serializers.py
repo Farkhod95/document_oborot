@@ -84,7 +84,7 @@ class CommandFileSerializer(LocaleSerializer):
 class ReplyLetterSerializer(LocaleSerializer):
     class Meta:
         model = ReplyLetter
-        fields = ('id', 'company', 'task', 'letter_number', 'responsible_person', 'basis', 'comment')
+        fields = ('id', 'company', 'task', 'letter_number', 'responsible_person', 'basis', 'comment', 'organization')
 
 
 class ReplyLetterListSerializer(LocaleSerializer):
@@ -94,7 +94,7 @@ class ReplyLetterListSerializer(LocaleSerializer):
     class Meta:
         model = ReplyLetter
         fields = ('id', 'company', 'company_detail', 'task', 'letter_number', 'responsible_person',
-                  'responsible_person_detail', 'basis', 'comment')
+                  'responsible_person_detail', 'basis', 'comment', 'organization')
 
 
 class ReplyLetterFileSerializer(LocaleSerializer):
