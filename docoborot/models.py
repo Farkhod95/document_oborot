@@ -34,7 +34,7 @@ class Task(BaseModel):
         CANCELLED = 'cancelled', _('Cancelled')
 
     status = models.CharField(choices=STATUS.choices, max_length=20, default=STATUS.NEW, help_text=_("Holati"))
-    task_type = models.CharField(choices=TASK_TYPE.choices, max_length=20, default=STATUS.TASK_TYPE1, help_text=_("Vazifa turi"))
+    task_type = models.CharField(choices=TASK_TYPE.choices, max_length=20, default=TASK_TYPE.TASK_TYPE1, help_text=_("Vazifa turi"))
     company = models.ForeignKey(Company, related_name='tasks', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Kompaniya"))
     type = models.CharField(choices=TYPE.choices, max_length=12, null=True, blank=True, help_text=_("Tip"))
     name = models.CharField(_('Task number'), max_length=100, null=True, blank=True, help_text=_("Task raqami"))
