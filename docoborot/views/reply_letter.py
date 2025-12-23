@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from docoborot.filterset import ReplyLetterFilter
 from docoborot.models import ReplyLetter
-from docoborot.serializers import ReplyLetterSerializer
+from docoborot.serializers import ReplyLetterSerializer, ReplyLetterListSerializer
 
 from restapp.pagination import ResultsSetPagination
 from restapp.utils.responses import nonContent
@@ -33,7 +33,7 @@ class ReplyLetterFieldInfoView(APIView):
 
 
 class ReplyLetterView(ListCreateAPIView):
-    serializer_class = ReplyLetterSerializer
+    serializer_class = ReplyLetterListSerializer
     pagination_class = ResultsSetPagination
     filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend)
     filterset_class = ReplyLetterFilter
@@ -61,7 +61,7 @@ class ReplyLetterDetailView(RetrieveUpdateDestroyAPIView):
 
     def get(self, request, pk):
         instance = get_object_or_404(ReplyLetter, id=pk)
-        serializer = ReplyLetterSerializer(instance)
+        serializer = ReplyLetterListSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
