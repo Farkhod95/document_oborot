@@ -14,8 +14,7 @@
 
 #### 3. Install requirements
 
-    pip install -r requirements.txt
-
+    pip install -r requirements.txt 
 #### 4. Migrate
 
         python manage.py makemigrations

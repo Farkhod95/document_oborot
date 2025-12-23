@@ -15,6 +15,7 @@ class TaskFilter(FilterSet):
             'priority': ['exact'],
             'department': ['exact'],
             'signed_by': ['exact'],
+            'task_type': ['exact'],
             'name': ['exact', 'icontains'],
             'start_date': ['exact', 'gte', 'lte'],
             'end_date': ['exact', 'gte', 'lte'],

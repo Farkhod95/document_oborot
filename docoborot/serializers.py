@@ -111,7 +111,7 @@ class TaskShortSerializer(LocaleSerializer):
 
     class Meta:
         model = Task
-        fields = ('id', 'name', 'status', 'type', 'priority', 'company', 'company_detail', 'department', 'department_detail', 'list_of_magazine', 'list_of_magazine_detail')
+        fields = ('id', 'name', 'status', 'type', 'priority', 'company', 'company_detail', 'department', 'department_detail', 'list_of_magazine', 'list_of_magazine_detail', 'task_type')
 
 
 class TaskPartShortSerializer(LocaleSerializer):
@@ -134,7 +134,7 @@ class TaskSerializer(LocaleSerializer):
     class Meta:
         model = Task
         fields = (
-            'id', 'status', 'company', 'company_detail', 'type', 'name',
+            'id', 'status', 'company', 'company_detail', 'type', 'name', 'task_type',
             'task_form', 'task_form_detail', 'sending_org', 'input_doc_number', 'output_doc_number',
             'start_date', 'end_date', 'priority', 'sending_respon_person',
             'department', 'department_detail', 'signed_by', 'signed_by_detail', 'signed_date', 'note',
