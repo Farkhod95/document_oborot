@@ -20,16 +20,16 @@ class CommandFileAdmin(admin.ModelAdmin):
 
 @admin.register(ReplyLetter)
 class ReplyLetterAdmin(admin.ModelAdmin):
-    list_display = ('company', 'task', 'letter_number', 'responsible_person', 'basis', 'comment')
-    fields =  ('company', 'task', 'letter_number', 'responsible_person', 'basis', 'comment')
+    list_display = ('company', 'task', 'letter_number', 'responsible_person', 'basis', 'comment', 'organization')
+    fields =  ('company', 'task', 'letter_number', 'responsible_person', 'basis', 'comment', 'organization')
     search_fields = ('company__name', 'task__name')
 
 
 @admin.register(ReplyLetterFile)
 class ReplyLetterFileAdmin(admin.ModelAdmin):
-    list_display = ('reply_letter', 'title', 'organization')
-    fields =  ('reply_letter', 'title', 'file', 'organization')
-    search_fields = ('reply_letter__letter_number', 'title', 'organization')
+    list_display = ('reply_letter', 'title',)
+    fields =  ('reply_letter', 'title', 'file')
+    search_fields = ('reply_letter__letter_number', 'title')
 
 
 @admin.register(TaskAttachment)
