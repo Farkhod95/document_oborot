@@ -163,7 +163,7 @@ class TaskEvent(BaseModel):
         FILE_ADDED = 'file_added', _('File added')
         COMMENTED = 'commented', _('Commented')
 
-    task = models.ForeignKey(Task, related_name='events', on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, related_name='events', on_delete=models.CASCADE, null=True, blank=True)
     part = models.ForeignKey(TaskPart, related_name='events', on_delete=models.SET_NULL, null=True, blank=True)
     actor = models.ForeignKey(User, related_name='task_events', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Kim bajardi"))
     event_type = models.CharField(max_length=30, choices=TYPE.choices, help_text=_("Event turi"))
