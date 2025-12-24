@@ -37,7 +37,7 @@ class TaskView(ListCreateAPIView):
     - Ichida 1 yoki ko‘p TaskPart bo‘lishi mumkin (bo‘linadigan vazifa).
     - Umumiy status odatda TaskPart statuslariga qarab yuradi.
     """
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
     pagination_class = ResultsSetPagination
     filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend)
@@ -45,8 +45,24 @@ class TaskView(ListCreateAPIView):
     search_fields = ('name', 'sending_org', 'input_doc_number', 'output_doc_number', 'note')
     ordering = ['pk']
 
+    def _has_role(self, user, role_name: str) -> bool:
+        # Sizda roles = ManyToManyField(Role) va Role(Group) da name bor
+        return user.roles.filter(name__iexact=role_name).exists()
+
     def get_queryset(self):
-        return Task.objects.all()
+        user = self.request.user
+        qs = Task.objects.all()
+
+        # 1) Performer -> TaskPart.assignee bo‘yicha
+        if self._has_role(user, "Performer"):
+            return qs.filter(parts__assignee=user).distinct()
+
+        # 2) Signatory -> Task.signed_by bo‘yicha
+        if self._has_role(user, "Signatory"):
+            return qs.filter(signed_by=user)
+
+        # 3) Qolganlari -> hozirgidek
+        return qs
 
     def post(self, request):
         serializer = TaskSerializer(data=request.data)
