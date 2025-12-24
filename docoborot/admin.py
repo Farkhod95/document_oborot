@@ -54,8 +54,7 @@ class TaskAdmin(admin.ModelAdmin):
 class TaskPartAdmin(admin.ModelAdmin):
     list_display = ('task', 'title',)
     fields =  ('task', 'title', 'department',
-            'assignee', 'start_date', 'end_date', 'status', 'note',
-            'created_time', 'updated_time', 'created_by', 'updated_by',)
+            'assignee', 'start_date', 'end_date', 'status', 'note', 'created_by', 'updated_by',)
     search_fields = ('task__name', 'title')
 
 
