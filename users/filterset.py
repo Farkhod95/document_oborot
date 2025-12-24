@@ -4,6 +4,7 @@ from users.models import User, Company
 
 
 class UserFilter(FilterSet):
+    roles__name = django_filters.CharFilter(field_name='roles__name', lookup_expr='exact')
 
     class Meta:
         model = User
@@ -20,7 +21,6 @@ class UserFilter(FilterSet):
 
 
 class CompanyFilter(FilterSet):
-    roles__name = django_filters.CharFilter(field_name='roles__name', lookup_expr='exact')
 
     class Meta:
         model = Company
