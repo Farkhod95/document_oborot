@@ -32,6 +32,7 @@ class Task(BaseModel):
         RETURNED = 'returned', _('Returned')
         DONE = 'done', _('Done')
         CANCELLED = 'cancelled', _('Cancelled')
+        ARCHIVE = 'archive', _('Archive')
 
     status = models.CharField(choices=STATUS.choices, max_length=20, default=STATUS.NEW, help_text=_("Holati"))
     task_type = models.CharField(choices=TASK_TYPE.choices, max_length=20, default=TASK_TYPE.TASK_TYPE1, help_text=_("Vazifa turi"))

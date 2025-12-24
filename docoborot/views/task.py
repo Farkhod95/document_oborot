@@ -95,5 +95,7 @@ class TaskDetailView(RetrieveUpdateDestroyAPIView):
 
     def delete(self, request, pk):
         instance = get_object_or_404(Task, id=pk)
-        instance.delete()
+        instance.status = 'archive'
+        instance.save()
+        # instance.delete()
         return Response(nonContent(), status.HTTP_204_NO_CONTENT)
