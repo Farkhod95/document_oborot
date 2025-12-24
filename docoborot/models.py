@@ -190,7 +190,7 @@ class TaskEvent(BaseModel):
 
 class TaskAttachment(BaseModel):
     """Fayl biriktirish: taskga yoki aniq partga hujjat (docx/pdf/...) qo‘shiladi va logga tushadi."""
-    task = models.ForeignKey(Task, related_name='attachments', on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, related_name='attachments', on_delete=models.CASCADE, null=True, blank=True)
     part = models.ForeignKey(TaskPart, related_name='attachments', on_delete=models.SET_NULL, null=True, blank=True)
     title = models.CharField(max_length=255, blank=True, help_text=_("Sarlavha"))
     file = models.FileField(upload_to='task_files/%Y/%m/%d/', help_text=_("Fayl"))
