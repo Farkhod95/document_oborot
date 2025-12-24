@@ -1,5 +1,5 @@
 from django_filters.rest_framework import FilterSet
-
+import django_filters
 from users.models import User, Company
 
 
