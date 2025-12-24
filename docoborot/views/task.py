@@ -46,22 +46,29 @@ class TaskView(ListCreateAPIView):
     ordering = ['pk']
 
     def _has_role(self, user, role_name: str) -> bool:
-        # Sizda roles = ManyToManyField(Role) va Role(Group) da name bor
-        return user.roles.filter(name__iexact=role_name).exists()
+        # 1) Agar User modelda roles M2M bo'lsa
+        roles_rel = getattr(user, "roles", None)
+        if roles_rel is not None:
+            try:
+                if roles_rel.filter(name__iexact=role_name).exists():
+                    return True
+            except Exception:
+                pass
+
+        # 2) Fallback: Django Group (ko‘p hollarda shu ishlaydi)
+        return user.groups.filter(name__iexact=role_name).exists()
 
     def get_queryset(self):
         user = self.request.user
         qs = Task.objects.all()
 
-        # 1) Performer -> TaskPart.assignee bo‘yicha
         if self._has_role(user, "Performer"):
-            return qs.filter(parts__assignee=user).distinct()
+            # user object emas, id bilan filter qilish ham aniqroq bo'ladi
+            return qs.filter(parts__assignee_id=user.id).distinct()
 
-        # 2) Signatory -> Task.signed_by bo‘yicha
         if self._has_role(user, "Signatory"):
-            return qs.filter(signed_by=user)
+            return qs.filter(signed_by_id=user.id)
 
-        # 3) Qolganlari -> hozirgidek
         return qs
 
     def post(self, request):
