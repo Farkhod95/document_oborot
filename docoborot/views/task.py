@@ -62,14 +62,15 @@ class TaskView(ListCreateAPIView):
         user = self.request.user
         qs = Task.objects.all()
 
-        if self._has_role(user, "Performer"):
-            # user object emas, id bilan filter qilish ham aniqroq bo'ladi
-            return qs.filter(parts__assignee_id=user.id).distinct()
+        # if self._has_role(user, "Performer"):
+        #     # user object emas, id bilan filter qilish ham aniqroq bo'ladi
+        #     return qs.filter(parts__assignee_id=user.id).distinct()
+        #
+        # if self._has_role(user, "Signatory"):
+        #     return qs.filter(signed_by_id=user.id)
 
-        if self._has_role(user, "Signatory"):
-            return qs.filter(signed_by_id=user.id)
-
-        return qs
+        # return qs
+        return qs.filter(parts__assignee_id=user.id).distinct()
 
     def post(self, request):
         serializer = TaskSerializer(data=request.data)
