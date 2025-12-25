@@ -183,7 +183,7 @@ class TaskAttachmentSerializer(LocaleSerializer):
     class Meta:
         model = TaskAttachment
         fields = (
-            'id', 'task', 'task_detail', 'part', 'part_detail',
+            'id', 'task', 'task_detail', 'part', 'part_detail', 'comment',
             'title', 'file', 'uploaded_by', 'uploaded_by_detail',
             'created_time', 'updated_time', 'created_by', 'updated_by',
         )

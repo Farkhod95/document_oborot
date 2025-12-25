@@ -57,6 +57,7 @@ class TaskAttachmentFilter(FilterSet):
         fields = {
             'task': ['exact'],
             'part': ['exact'],
+            'comment': ['exact'],
             'title': ['exact', 'icontains'],
             'uploaded_by': ['exact'],
         }

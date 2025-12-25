@@ -189,27 +189,6 @@ class TaskEvent(BaseModel):
                                         message=message or "", from_status=from_status, to_status=to_status, extra=extra or {})
 
 
-class TaskAttachment(BaseModel):
-    """Fayl biriktirish: taskga yoki aniq partga hujjat (docx/pdf/...) qo‘shiladi va logga tushadi."""
-    task = models.ForeignKey(Task, related_name='attachments', on_delete=models.CASCADE, null=True, blank=True)
-    part = models.ForeignKey(TaskPart, related_name='attachments', on_delete=models.SET_NULL, null=True, blank=True)
-    title = models.CharField(max_length=255, blank=True, help_text=_("Sarlavha"))
-    file = models.FileField(upload_to='task_files/%Y/%m/%d/', help_text=_("Fayl"))
-    uploaded_by = models.ForeignKey(User, related_name='task_files', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Kim yukladi"))
-
-    class Meta:
-        verbose_name = _('Task Attachment')
-        verbose_name_plural = _('Task Attachments')
-
-    def __str__(self):
-        return self.title or (self.file.name.split('/')[-1] if self.file else f"Attachment#{self.pk}")
-
-    def save(self, *args, actor=None, **kwargs):
-        super().save(*args, **kwargs)
-        TaskEvent.log(task=self.task, part=self.part, actor=actor or self.uploaded_by or self.created_by,
-                      event_type=TaskEvent.TYPE.FILE_ADDED, message=f"Fayl qo‘shildi: {self.file.name.split('/')[-1]}",
-                      extra={"attachment_id": self.pk, "file": self.file.name})
-
 
 class TaskComment(BaseModel):
     """Izohlar: UI’da chip/tag ko‘rinishida chiqarish mumkin, har biri tarixga (log) ham tushadi."""
@@ -232,6 +211,30 @@ class TaskComment(BaseModel):
         TaskEvent.log(task=self.task, part=self.part, actor=self.author or self.created_by,
                       event_type=TaskEvent.TYPE.COMMENTED, message="Izoh qo‘shildi",
                       extra={"comment_id": self.pk, "text": (self.text or "")[:200]})
+
+
+
+class TaskAttachment(BaseModel):
+    """Fayl biriktirish: taskga yoki aniq partga hujjat (docx/pdf/...) qo‘shiladi va logga tushadi."""
+    task = models.ForeignKey(Task, related_name='attachments', on_delete=models.CASCADE, null=True, blank=True)
+    part = models.ForeignKey(TaskPart, related_name='attachments', on_delete=models.SET_NULL, null=True, blank=True)
+    comment = models.ForeignKey(TaskComment, related_name='attachments', on_delete=models.SET_NULL, null=True, blank=True)
+    title = models.CharField(max_length=255, blank=True, help_text=_("Sarlavha"))
+    file = models.FileField(upload_to='task_files/%Y/%m/%d/', help_text=_("Fayl"))
+    uploaded_by = models.ForeignKey(User, related_name='task_files', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Kim yukladi"))
+
+    class Meta:
+        verbose_name = _('Task Attachment')
+        verbose_name_plural = _('Task Attachments')
+
+    def __str__(self):
+        return self.title or (self.file.name.split('/')[-1] if self.file else f"Attachment#{self.pk}")
+
+    def save(self, *args, actor=None, **kwargs):
+        super().save(*args, **kwargs)
+        TaskEvent.log(task=self.task, part=self.part, actor=actor or self.uploaded_by or self.created_by,
+                      event_type=TaskEvent.TYPE.FILE_ADDED, message=f"Fayl qo‘shildi: {self.file.name.split('/')[-1]}",
+                      extra={"attachment_id": self.pk, "file": self.file.name})
 
 
 class Command(BaseModel):
