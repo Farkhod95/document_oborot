@@ -33,6 +33,7 @@ class Task(BaseModel):
         DONE = 'done', _('Done')
         CANCELLED = 'cancelled', _('Cancelled')
         ARCHIVE = 'archive', _('Archive')
+        EXPIRED = 'expired', _('Expired')
 
     status = models.CharField(choices=STATUS.choices, max_length=20, default=STATUS.NEW, help_text=_("Holati"))
     task_type = models.CharField(choices=TASK_TYPE.choices, max_length=20, default=TASK_TYPE.TASK_TYPE1, help_text=_("Vazifa turi"))
@@ -43,14 +44,17 @@ class Task(BaseModel):
     sending_org = models.CharField(_('Sending'), max_length=255, null=True, blank=True, help_text=_("Yuboruvchi tashkilot"))
     input_doc_number = models.CharField(_('Input doc number'), max_length=255, null=True, blank=True, help_text=_("Kiruvchi hujjat raqami"))
     output_doc_number = models.CharField(_('Output doc number'), max_length=255, null=True, blank=True, help_text=_("Chiquvchi hujjat raqami"))
-    start_date = models.DateField(_('Start date'), null=True, blank=True, help_text=_("Boshlash sanasi"))
-    end_date = models.DateField(_('End date'), null=True, blank=True, help_text=_("Tugash sanasi"))
+    # start_date = models.DateField(_('Start date'), null=True, blank=True, help_text=_("Boshlash sanasi"))
+    # end_date = models.DateField(_('End date'), null=True, blank=True, help_text=_("Tugash sanasi"))
+    start_date = models.DateTimeField(_('Start date'), null=True, blank=True, help_text=_("Boshlash sanasi/vaqti"))
+    end_date = models.DateTimeField(_('End date'), null=True, blank=True, help_text=_("Tugash sanasi/vaqti"))
     priority = models.CharField(choices=PRIORITY.choices, max_length=12, null=True, blank=True, help_text=_("Muhimligi"))
     sending_respon_person = models.CharField(_('Responsible person for sending'), max_length=255, null=True, blank=True, help_text=_("Yuborish uchun mas'ul shaxs"))
     department = models.ForeignKey(Department, related_name='tasks', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Bo‘lim"))
     list_of_magazine = models.ForeignKey(ListOfMagazine, related_name='list_of_magazine_task', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Jurnal nomi"))
     signed_by = models.ForeignKey(User, related_name='tasks_signed_by', on_delete=models.CASCADE, null=True, blank=True, verbose_name=_('Imzolovchi'))
-    signed_date = models.DateField(_('Signed date'), null=True, blank=True, help_text=_("Imzolangan sanasi"))
+    # signed_date = models.DateField(_('Signed date'), null=True, blank=True, help_text=_("Imzolangan sanasi"))
+    signed_date = models.DateTimeField(_('Signed date'), null=True, blank=True, help_text=_("Imzolangan sanasi/vaqti"))
     note = models.TextField(_('Note'), blank=True, help_text=_("Izoh"))
 
     class Meta:
@@ -101,6 +105,7 @@ class TaskPart(BaseModel):
         RETURNED = 'returned', _('Returned')
         DONE = 'done', _('Done')
         CANCELLED = 'cancelled', _('Cancelled')
+        EXPIRED = 'expired', _('Expired')
 
     task = models.ForeignKey(Task, related_name='parts', on_delete=models.CASCADE)
     title = models.CharField(_('Section / Part title'), max_length=255, help_text=_("Bo‘lim nomi"))

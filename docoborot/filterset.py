@@ -13,8 +13,8 @@ class TaskFilter(FilterSet):
             'type': ['exact'],
             'status': ['exact'],
             'priority': ['exact'],
-            'department': ['exact'],
-            'signed_by': ['exact'],
+            # 'department': ['exact'],
+            # 'signed_by': ['exact'],
             'task_type': ['exact'],
             'name': ['exact', 'icontains'],
             'start_date': ['exact', 'gte', 'lte'],
@@ -28,8 +28,8 @@ class TaskPartFilter(FilterSet):
         model = TaskPart
         fields = {
             'task': ['exact'],
-            'department': ['exact'],
-            'assignee': ['exact'],
+            # 'department': ['exact'],
+            # 'assignee': ['exact'],
             'status': ['exact'],
             'title': ['exact', 'icontains'],
             'start_date': ['exact', 'gte', 'lte'],

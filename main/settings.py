@@ -2,6 +2,8 @@ import os
 from datetime import timedelta
 from django.utils.translation import gettext_lazy as _
 from corsheaders.defaults import default_headers
+from celery.schedules import crontab
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = 'django-insecure-12345yourkeyhere54321'
@@ -91,6 +93,13 @@ TEMPLATES = [
         },
     },
 ]
+
+# CELERY_BEAT_SCHEDULE = {
+#     "expire-overdue-task-parts-every-5-min": {
+#         "task": "your_app.tasks.expire_overdue_task_parts",
+#         "schedule": crontab(minute="*/5"),  # har 5 daqiqada
+#     },
+# }
 
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
