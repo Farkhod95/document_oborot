@@ -60,6 +60,7 @@ class TaskAttachmentFilter(FilterSet):
             'comment': ['exact'],
             'title': ['exact', 'icontains'],
             'uploaded_by': ['exact'],
+            'link': ['exact'],
         }
 
 

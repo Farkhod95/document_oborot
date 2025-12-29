@@ -321,6 +321,7 @@ class TaskEvent(BaseModel):
 class TaskComment(BaseModel):
     """Izohlar: UI’da chip/tag ko‘rinishida chiqarish mumkin, har biri tarixga (log) ham tushadi."""
     task = models.ForeignKey(Task, related_name='comments', on_delete=models.CASCADE, null=True, blank=True)
+    link = models.CharField(_('Link'), max_length=255, help_text=_("Havola"))
     part = models.ForeignKey(TaskPart, related_name='comments', on_delete=models.SET_NULL, null=True, blank=True)
     author = models.ForeignKey(User, related_name='task_comments', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Muallif"))
     text = models.TextField(help_text=_("Izoh matni"))

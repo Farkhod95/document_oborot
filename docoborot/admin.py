@@ -34,8 +34,8 @@ class ReplyLetterFileAdmin(admin.ModelAdmin):
 
 @admin.register(TaskAttachment)
 class TaskAttachmentAdmin(admin.ModelAdmin):
-    list_display = ('task', 'title', 'part')
-    fields =  ('task', 'title', 'file', 'part')
+    list_display = ('task', 'title', 'part', 'link')
+    fields =  ('task', 'title', 'file', 'part', 'link')
     search_fields = ('task__name', 'title', 'part__title')
 
 
