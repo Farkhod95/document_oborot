@@ -46,7 +46,7 @@ class TaskAdmin(admin.ModelAdmin):
             'task_form', 'sending_org', 'input_doc_number', 'output_doc_number',
             'start_date', 'end_date', 'priority', 'sending_respon_person',
             'department', 'signed_by', 'note', 'task_type',
-            'created_time', 'updated_time', 'created_by', 'updated_by', 'list_of_magazine')
+            'created_by', 'updated_by', 'list_of_magazine')
     search_fields = ('status', 'company__name',)
 
 

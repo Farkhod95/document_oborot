@@ -1,8 +1,15 @@
+# docoborot/utils/emailing.py
+from typing import Optional
 from django.conf import settings
 from django.core.mail import send_mail
 
 
-def send_new_task_assigned_email(to_email: str, task_name: str = "", part_title: str = "", task_id: int | None = None):
+def send_new_task_assigned_email(
+    to_email: str,
+    task_name: str = "",
+    part_title: str = "",
+    task_id: Optional[int] = None,
+):
     if not to_email:
         return
 
@@ -25,7 +32,7 @@ def send_new_task_assigned_email(to_email: str, task_name: str = "", part_title:
     send_mail(
         subject=subject,
         message="\n".join(lines),
-        from_email=settings.DEFAULT_FROM_EMAIL,
+        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
         recipient_list=[to_email],
-        fail_silently=True,  # xohlasangiz False qiling
+        fail_silently=False,
     )

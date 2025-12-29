@@ -97,13 +97,13 @@ class Task(BaseModel):
                 self.save(update_fields=['status', 'updated_time'])
 
             # ✅ Task IN_PROGRESS bo‘lganda signed_by ga email
-            if new_status == Task.STATUS.IN_PROGRESS and self.signed_by and self.signed_by.email:
-                send_new_task_assigned_email(
-                    to_email=self.signed_by.email,
-                    task_name=self.name or f"Task#{self.pk}",
-                    part_title="",
-                    task_id=self.pk
-                )
+            # if new_status == Task.STATUS.IN_PROGRESS and self.signed_by and self.signed_by.email:
+            #     send_new_task_assigned_email(
+            #         to_email=self.signed_by.email,
+            #         task_name=self.name or f"Task#{self.pk}",
+            #         part_title="",
+            #         task_id=self.pk
+            #     )
 
         return self.status
 
@@ -268,8 +268,8 @@ class TaskPart(BaseModel):
                 (old is None) and (self.status == self.STATUS.IN_PROGRESS)
             )
 
-            if just_changed_to_in_progress or created_with_in_progress:
-                self._send_in_progress_email()
+            # if just_changed_to_in_progress or created_with_in_progress:
+            #     self._send_in_progress_email()
         except Exception:
             # email xatosi save/logikani yiqitmasin
             pass
