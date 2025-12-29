@@ -3,10 +3,12 @@ from django.db import models
 from django.db.models import JSONField
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.core.mail import send_mail
 
 from restapp.models import BaseModel
 from users.models import Company
 from directory.models import DocumentForm, Department, ListOfMagazine
+from docoborot.utils.emailing import send_new_task_assigned_email
 
 User = settings.AUTH_USER_MODEL
 
@@ -69,7 +71,6 @@ class Task(BaseModel):
         return self.parts.count() > 1
 
     def recompute_status(self, save: bool = True) -> str:
-        """Task umumiy statusini TaskPart statuslaridan hisoblaydi."""
         qs = self.parts.all()
         if not qs.exists():
             new_status = Task.STATUS.NEW
@@ -88,16 +89,28 @@ class Task(BaseModel):
             else:
                 new_status = Task.STATUS.NEW
 
-        if self.status != new_status:
+        old_status = self.status
+
+        if old_status != new_status:
             self.status = new_status
             if save:
-                # sizda BaseModel: updated_time, shuning uchun updated_time ni update_fields ga qo‘shdik
                 self.save(update_fields=['status', 'updated_time'])
+
+            # ✅ Task IN_PROGRESS bo‘lganda signed_by ga email
+            if new_status == Task.STATUS.IN_PROGRESS and self.signed_by and self.signed_by.email:
+                send_new_task_assigned_email(
+                    to_email=self.signed_by.email,
+                    task_name=self.name or f"Task#{self.pk}",
+                    part_title="",
+                    task_id=self.pk
+                )
+
         return self.status
 
 
 class TaskPart(BaseModel):
     """Task bo‘lagi (bo‘lim/subtask): har bir qism 1 ijrochiga biriktiriladi, muddat va status alohida yuradi."""
+
     class STATUS(models.TextChoices):
         NEW = 'new', _('New')
         IN_PROGRESS = 'in_progress', _('In progress')
@@ -109,8 +122,14 @@ class TaskPart(BaseModel):
 
     task = models.ForeignKey(Task, related_name='parts', on_delete=models.CASCADE)
     title = models.CharField(_('Section / Part title'), max_length=255, help_text=_("Bo‘lim nomi"))
-    department = models.ForeignKey(Department, related_name='task_parts', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Bo‘lim"))
-    assignee = models.ForeignKey(User, related_name='task_parts_assigned', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Ijrochi"))
+    department = models.ForeignKey(
+        Department, related_name='task_parts',
+        on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Bo‘lim")
+    )
+    assignee = models.ForeignKey(
+        User, related_name='task_parts_assigned',
+        on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Ijrochi")
+    )
     start_date = models.DateField(_('Start date'), null=True, blank=True, help_text=_("Boshlash sanasi"))
     end_date = models.DateField(_('End date'), null=True, blank=True, help_text=_("Tugash sanasi"))
     status = models.CharField(choices=STATUS.choices, max_length=20, default=STATUS.NEW, help_text=_("Holati"))
@@ -120,7 +139,10 @@ class TaskPart(BaseModel):
     class Meta:
         verbose_name = _('Task Part')
         verbose_name_plural = _('Task Parts')
-        indexes = [models.Index(fields=['task', 'status']), models.Index(fields=['assignee', 'status'])]
+        indexes = [
+            models.Index(fields=['task', 'status']),
+            models.Index(fields=['assignee', 'status'])
+        ]
 
     def __str__(self):
         return f"{self.task_id} :: {self.title}"
@@ -129,28 +151,128 @@ class TaskPart(BaseModel):
         if self.start_date and self.end_date and self.end_date < self.start_date:
             raise ValidationError(_("End date cannot be earlier than start date."))
 
+    # ==========
+    # EMAIL HELPERS
+    # ==========
+    def _collect_notify_emails(self) -> list:
+        """
+        Task IN_PROGRESS bo'lganda xabar yuboriladigan email'lar:
+        - Task.signed_by.email
+        - TaskPart.assignee.email
+        """
+        emails = set()
+
+        # Task.signed_by
+        try:
+            signed_by = getattr(self.task, "signed_by", None)
+            if signed_by and getattr(signed_by, "email", None):
+                emails.add(signed_by.email.strip())
+        except Exception:
+            pass
+
+        # TaskPart.assignee
+        try:
+            if self.assignee and getattr(self.assignee, "email", None):
+                emails.add(self.assignee.email.strip())
+        except Exception:
+            pass
+
+        # bo'shlarni olib tashlash
+        emails = [e for e in emails if e]
+        return emails
+
+    def _send_in_progress_email(self):
+        """
+        'Sizga yangi task biriktirildi' xabari.
+        SMTP muammosi bo'lsa save yiqilmasin (try/except tashqarida).
+        """
+        recipients = self._collect_notify_emails()
+        if not recipients:
+            return
+
+        task_name = self.task.name or f"Task#{self.task_id}"
+        subject = "Yangi task biriktirildi"
+        message = (
+            f"Assalomu alaykum!\n\n"
+            f"Sizga yangi task biriktirildi.\n\n"
+            f"Task: {task_name}\n"
+            f"Bo'lim (TaskPart): {self.title}\n"
+            f"Status: {self.status}\n\n"
+            f"Iltimos tizimga kirib ko‘rib chiqing."
+        )
+
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", settings.EMAIL_HOST_USER),
+            recipient_list=recipients,
+            fail_silently=False,
+        )
+
     def save(self, *args, actor=None, **kwargs):
         """actor berilsa logga kim o‘zgartirgani yoziladi."""
         old = TaskPart.objects.filter(pk=self.pk).first() if self.pk else None
         super().save(*args, **kwargs)
 
         if old is None:
-            TaskEvent.log(task=self.task, part=self, actor=actor or self.created_by, event_type=TaskEvent.TYPE.PART_CREATED,
-                          message=f"Bo‘lim yaratildi: {self.title}", extra={"title": self.title, "assignee_id": self.assignee_id, "status": self.status})
+            TaskEvent.log(
+                task=self.task,
+                part=self,
+                actor=actor or self.created_by,
+                event_type=TaskEvent.TYPE.PART_CREATED,
+                message=f"Bo‘lim yaratildi: {self.title}",
+                extra={"title": self.title, "assignee_id": self.assignee_id, "status": self.status}
+            )
             if self.assignee_id:
-                TaskEvent.log(task=self.task, part=self, actor=actor or self.created_by, event_type=TaskEvent.TYPE.ASSIGNED,
-                              message="Ijrochiga biriktirildi", extra={"assignee_id": self.assignee_id})
+                TaskEvent.log(
+                    task=self.task,
+                    part=self,
+                    actor=actor or self.created_by,
+                    event_type=TaskEvent.TYPE.ASSIGNED,
+                    message="Ijrochiga biriktirildi",
+                    extra={"assignee_id": self.assignee_id}
+                )
         else:
             if old.assignee_id != self.assignee_id:
-                TaskEvent.log(task=self.task, part=self, actor=actor or self.updated_by, event_type=TaskEvent.TYPE.ASSIGNED,
-                              message="Ijrochi o‘zgardi", extra={"from_assignee_id": old.assignee_id, "to_assignee_id": self.assignee_id})
+                TaskEvent.log(
+                    task=self.task,
+                    part=self,
+                    actor=actor or self.updated_by,
+                    event_type=TaskEvent.TYPE.ASSIGNED,
+                    message="Ijrochi o‘zgardi",
+                    extra={"from_assignee_id": old.assignee_id, "to_assignee_id": self.assignee_id}
+                )
             if old.status != self.status:
-                TaskEvent.log(task=self.task, part=self, actor=actor or self.updated_by, event_type=TaskEvent.TYPE.STATUS_CHANGED,
-                              message="Status o‘zgardi", from_status=old.status, to_status=self.status)
+                TaskEvent.log(
+                    task=self.task,
+                    part=self,
+                    actor=actor or self.updated_by,
+                    event_type=TaskEvent.TYPE.STATUS_CHANGED,
+                    message="Status o‘zgardi",
+                    from_status=old.status,
+                    to_status=self.status
+                )
 
         # parent task statusni yangilab turadi
         self.task.recompute_status(save=True)
 
+        # =========================
+        # EMAIL NOTIFICATION (LOGIKA BUZILMASIN)
+        # =========================
+        # TaskPart status IN_PROGRESS ga o'tgan paytda xabar yuborish
+        try:
+            just_changed_to_in_progress = (
+                (old is not None) and (old.status != self.status) and (self.status == self.STATUS.IN_PROGRESS)
+            )
+            created_with_in_progress = (
+                (old is None) and (self.status == self.STATUS.IN_PROGRESS)
+            )
+
+            if just_changed_to_in_progress or created_with_in_progress:
+                self._send_in_progress_email()
+        except Exception:
+            # email xatosi save/logikani yiqitmasin
+            pass
 
 class TaskEvent(BaseModel):
     """Universal log: ‘Vazifalar tarixi’ va ‘Amalga oshirish jarayoni’ shu jadvaldan chiqadi."""
