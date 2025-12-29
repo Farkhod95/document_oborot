@@ -168,6 +168,7 @@ class TaskEvent(BaseModel):
         CANCELLED = 'cancelled', _('Cancelled')
         FILE_ADDED = 'file_added', _('File added')
         COMMENTED = 'commented', _('Commented')
+        EXPIRED = 'expired', _('Expired')
 
     task = models.ForeignKey(Task, related_name='events', on_delete=models.CASCADE, null=True, blank=True)
     part = models.ForeignKey(TaskPart, related_name='events', on_delete=models.SET_NULL, null=True, blank=True)
