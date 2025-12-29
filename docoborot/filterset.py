@@ -58,9 +58,9 @@ class TaskAttachmentFilter(FilterSet):
             'task': ['exact'],
             'part': ['exact'],
             'comment': ['exact'],
+            'link': ['exact'],
             'title': ['exact', 'icontains'],
             'uploaded_by': ['exact'],
-            'link': ['exact'],
         }
 
 
