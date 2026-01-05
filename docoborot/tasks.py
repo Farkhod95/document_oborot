@@ -1,68 +1,93 @@
-# from celery import shared_task
-# from django.db import transaction
-# from django.utils import timezone
-#
-# from docoborot.models import TaskPart, Task, TaskEvent
-#
-# @shared_task
-# def expire_overdue_task_parts():
-#     """
-#     end_date o'tib ketgan TaskPart larni EXPIRED ga o'tkazadi.
-#     Keyin parent Task statusini recompute qiladi.
-#     """
-#     now = timezone.now()
-#
-#     # Qaysi statuslardan EXPIRED ga o'tsin:
-#     can_expire_statuses = [
-#         TaskPart.STATUS.NEW,
-#         TaskPart.STATUS.IN_PROGRESS,
-#         TaskPart.STATUS.ON_REVIEW,
-#         TaskPart.STATUS.RETURNED,
-#     ]
-#
-#     qs = (
-#         TaskPart.objects
-#         .select_related("task")
-#         .filter(end_date__isnull=False, end_date__lt=now, status__in=can_expire_statuses)
-#         .order_by("id")
-#     )
-#
-#     updated_count = 0
-#
-#     # katta bazada xavfsizroq bo‘lishi uchun bo‘lib ishlatamiz
-#     for part in qs.iterator(chunk_size=500):
-#         with transaction.atomic():
-#             # qayta tekshiruv (race condition bo'lmasin)
-#             part = TaskPart.objects.select_for_update().select_related("task").get(pk=part.pk)
-#
-#             if not part.end_date or part.end_date >= now:
-#                 continue
-#             if part.status not in can_expire_statuses:
-#                 continue
-#
-#             old_status = part.status
-#             part.status = TaskPart.STATUS.EXPIRED
-#             part.save(update_fields=["status", "updated_time"])
-#
-#             # log
-#             TaskEvent.log(
-#                 task=part.task,
-#                 part=part,
-#                 actor=None,  # system
-#                 event_type=TaskEvent.TYPE.STATUS_CHANGED,
-#                 message="Muddati tugadi (avtomatik).",
-#                 from_status=old_status,
-#                 to_status=part.status,
-#                 extra={"expired_at": now.isoformat()}
-#             )
-#
-#             # parent task status
-#             part.task.recompute_status(save=True)
-#
-#             updated_count += 1
-#
-#     # agar xohlasangiz Task ning o'z end_date'i ham bo'lsa (sizda bor),
-#     # lekin TaskPart bo'lmasa ham EXPIRED bo'lsin degan qoida ham qo‘shish mumkin.
-#     # Hozir asosiy trigger TaskPart.
-#
-#     return {"expired_task_parts": updated_count, "checked_at": now.isoformat()}
+from celery import shared_task
+from django.conf import settings
+from django.core.mail import send_mail
+
+from docoborot.models import Task
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=10)
+def send_task_emails_task(self, task_id: int) -> dict:
+    """
+    Background: Task.signed_by va TaskPart.assignee email'lariga xabar yuboradi
+    """
+    try:
+        task = (
+            Task.objects
+            .select_related("signed_by", "company", "department")
+            .prefetch_related("parts__assignee", "parts__department")
+            .filter(id=task_id)
+            .first()
+        )
+        if not task:
+            return {"ok": False, "detail": f"Task topilmadi: {task_id}"}
+
+        task_name = task.name or f"Task#{task.id}"
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", settings.EMAIL_HOST_USER)
+        base_link = getattr(settings, "FRONTEND_URL", "https://doc.optivora-group.com/")
+
+        sent_to_signed_by = False
+        sent_to_assignees_count = 0
+        skipped_assignees_no_email = 0
+
+        # 1) signed_by ga email
+        if task.signed_by and task.signed_by.email:
+            subject = "Yangi Vazifa biriktirildi"
+            msg = (
+                "Assalomu alaykum!\n\n"
+                "Sizga yangi Vazifa biriktirildi.\n\n"
+                f"Vazifa: {task_name}\n"
+                f"Status: {task.status}\n"
+                f"Boshlash: {task.start_date or '-'}\n"
+                f"Tugash: {task.end_date or '-'}\n\n"
+                "Iltimos tizimga kirib ko‘rib chiqing.\n"
+                f"Link: {base_link}\n"
+            )
+            send_mail(
+                subject=subject,
+                message=msg,
+                from_email=from_email,
+                recipient_list=[task.signed_by.email],
+                fail_silently=False,
+            )
+            sent_to_signed_by = True
+
+        # 2) assignee'larga email (unique)
+        assignee_emails = set()
+        for part in task.parts.all():
+            if part.assignee and part.assignee.email:
+                assignee_emails.add(part.assignee.email)
+            else:
+                skipped_assignees_no_email += 1
+
+        if assignee_emails:
+            subject = "Sizga yangi vazifa biriktirildi"
+            for email in assignee_emails:
+                msg = (
+                    "Assalomu alaykum!\n\n"
+                    "Sizga yangi vazifa biriktirildi.\n\n"
+                    f"Vazifa: {task_name}\n"
+                    f"Umumiy status: {task.status}\n\n"
+                    "Iltimos tizimga kirib bo‘limingizni ko‘rib chiqing.\n"
+                    f"Link: {base_link}\n"
+                )
+                send_mail(
+                    subject=subject,
+                    message=msg,
+                    from_email=from_email,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+                sent_to_assignees_count += 1
+
+        return {
+            "ok": True,
+            "task_id": task.id,
+            "task_name": task_name,
+            "sent_to_signed_by": sent_to_signed_by,
+            "sent_to_assignees_count": sent_to_assignees_count,
+            "skipped_assignees_no_email": skipped_assignees_no_email,
+        }
+
+    except Exception as exc:
+        # qayta urinib ko‘rish (retry)
+        raise self.retry(exc=exc)

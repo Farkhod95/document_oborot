@@ -107,6 +107,13 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800
 
 WSGI_APPLICATION = 'main.wsgi.application'
 
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/1"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "Asia/Tashkent"
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -117,6 +124,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 #         'PORT': '5432',
 #     }
 # }
+
 
 DATABASES = {
     'default': {
