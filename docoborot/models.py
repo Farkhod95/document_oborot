@@ -361,9 +361,30 @@ class TaskAttachment(BaseModel):
 
     def save(self, *args, actor=None, **kwargs):
         super().save(*args, **kwargs)
-        TaskEvent.log(task=self.task, part=self.part, actor=actor or self.uploaded_by or self.created_by,
-                      event_type=TaskEvent.TYPE.FILE_ADDED, message=f"Fayl qo‘shildi: {self.file.name.split('/')[-1]}",
-                      extra={"attachment_id": self.pk, "file": self.file.name})
+
+        filename = None
+        if self.file and getattr(self.file, "name", None):
+            filename = self.file.name.split("/")[-1]
+
+        # File bo'lsa file nomi, bo'lmasa link
+        display = filename or (self.link or "")
+
+        # file ham yo'q, link ham yo'q bo'lsa — log yozmaymiz
+        if not display:
+            return
+
+        TaskEvent.log(
+            task=self.task,
+            part=self.part,
+            actor=actor or self.uploaded_by or self.created_by,
+            event_type=TaskEvent.TYPE.FILE_ADDED,
+            message=f"Birikma qo‘shildi: {display}",
+            extra={
+                "attachment_id": self.pk,
+                "file": (self.file.name if filename else None),
+                "link": (self.link if self.link else None),
+            }
+        )
 
 
 class Command(BaseModel):

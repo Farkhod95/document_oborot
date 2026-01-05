@@ -118,7 +118,6 @@ WSGI_APPLICATION = 'main.wsgi.application'
 #     }
 # }
 
-#
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
