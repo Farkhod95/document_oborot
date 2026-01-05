@@ -97,13 +97,13 @@ class Task(BaseModel):
                 self.save(update_fields=['status', 'updated_time'])
 
             # ✅ Task IN_PROGRESS bo‘lganda signed_by ga email
-            # if new_status == Task.STATUS.IN_PROGRESS and self.signed_by and self.signed_by.email:
-            #     send_new_task_assigned_email(
-            #         to_email=self.signed_by.email,
-            #         task_name=self.name or f"Task#{self.pk}",
-            #         part_title="",
-            #         task_id=self.pk
-            #     )
+            if new_status == Task.STATUS.IN_PROGRESS and self.signed_by and self.signed_by.email:
+                send_new_task_assigned_email(
+                    to_email=self.signed_by.email,
+                    task_name=self.name or f"Task#{self.pk}",
+                    part_title="",
+                    task_id=self.pk
+                )
 
         return self.status
 
@@ -130,8 +130,8 @@ class TaskPart(BaseModel):
         User, related_name='task_parts_assigned',
         on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Ijrochi")
     )
-    start_date = models.DateField(_('Start date'), null=True, blank=True, help_text=_("Boshlash sanasi"))
-    end_date = models.DateField(_('End date'), null=True, blank=True, help_text=_("Tugash sanasi"))
+    start_date = models.DateTimeField(_('Start date'), null=True, blank=True, help_text=_("Boshlash sanasi/vaqti"))
+    end_date = models.DateTimeField(_('End date'), null=True, blank=True, help_text=_("Tugash sanasi/vaqti"))
     status = models.CharField(choices=STATUS.choices, max_length=20, default=STATUS.NEW, help_text=_("Holati"))
     show_date = models.DateTimeField(_('Show date'), null=True, blank=True, help_text=_("Ko'rish vaqti sanasi"))
     note = models.TextField(blank=True, help_text=_("Izoh"))
@@ -268,8 +268,8 @@ class TaskPart(BaseModel):
                 (old is None) and (self.status == self.STATUS.IN_PROGRESS)
             )
 
-            # if just_changed_to_in_progress or created_with_in_progress:
-            #     self._send_in_progress_email()
+            if just_changed_to_in_progress or created_with_in_progress:
+                self._send_in_progress_email()
         except Exception:
             # email xatosi save/logikani yiqitmasin
             pass
