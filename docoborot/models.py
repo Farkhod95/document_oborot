@@ -347,9 +347,9 @@ class TaskAttachment(BaseModel):
     task = models.ForeignKey(Task, related_name='attachments', on_delete=models.CASCADE, null=True, blank=True)
     part = models.ForeignKey(TaskPart, related_name='attachments', on_delete=models.SET_NULL, null=True, blank=True)
     comment = models.ForeignKey(TaskComment, related_name='attachments', on_delete=models.SET_NULL, null=True, blank=True)
-    title = models.CharField(max_length=255, blank=True, help_text=_("Sarlavha"))
-    file = models.FileField(upload_to='task_files/%Y/%m/%d/', help_text=_("Fayl"))
-    link = models.CharField(_('Link'), max_length=255, help_text=_("Havola"))
+    title = models.CharField(max_length=255, null=True, blank=True, help_text=_("Sarlavha"))
+    file = models.FileField(upload_to='task_files/%Y/%m/%d/', null=True, blank=True, help_text=_("Fayl"))
+    link = models.CharField(_('Link'), max_length=255, null=True, blank=True, help_text=_("Havola"))
     uploaded_by = models.ForeignKey(User, related_name='task_files', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Kim yukladi"))
 
     class Meta:
