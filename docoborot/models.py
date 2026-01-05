@@ -198,7 +198,8 @@ class TaskPart(BaseModel):
             f"Task: {task_name}\n"
             f"Bo'lim (TaskPart): {self.title}\n"
             f"Status: {self.status}\n\n"
-            f"Iltimos tizimga kirib ko‘rib chiqing."
+            f"Iltimos tizimga kirib ko‘rib chiqing.\n\n"
+            f"Link: https://doc.optivora-group.com/"
         )
 
         send_mail(
