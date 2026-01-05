@@ -234,10 +234,10 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = 'uzbchinnibozor@gmail.com'
-EMAIL_HOST_PASSWORD = 'rrzfyxjdezziosxz'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-# EMAIL_HOST_USER = 'a.rajabov@bk.ru'
-# EMAIL_HOST_PASSWORD = 'gxvzbxlxlbthmomm'
+# EMAIL_HOST_USER = 'uzbchinnibozor@gmail.com'
+# EMAIL_HOST_PASSWORD = 'rrzfyxjdezziosxz'
 # DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+EMAIL_HOST_USER = 'a.rajabov1356@gmail.com'
+EMAIL_HOST_PASSWORD = 'zyuwfemyqvhebwmq'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
