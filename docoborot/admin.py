@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile, TaskAttachment, Task, TaskPart, \
-    TaskEvent, TaskComment
+    TaskEvent, TaskComment, EmployeeAccount
 
 
 @admin.register(Command)
@@ -73,3 +73,10 @@ class TaskCommentAdmin(admin.ModelAdmin):
     list_display = ('task', 'author', 'part', 'text', 'is_system')
     fields =  ('task', 'author', 'part', 'text', 'is_system')
     search_fields = ('task__name', 'part__title')
+
+
+@admin.register(EmployeeAccount)
+class EmployeeAccountAdmin(admin.ModelAdmin):
+    list_display = ('company', 'employee', 'date', 'type', 'comment')
+    fields = ('company', 'employee', 'date', 'type', 'comment')
+    search_fields = ('employee__fullname',)

@@ -3,11 +3,14 @@ from django.urls import re_path, path
 from docoborot.views.command import CommandView, CommandDetailView, CommandFieldInfoView
 from docoborot.views.command_file import CommandFileView, CommandFileDetailView, CommandFileFieldInfoView
 from docoborot.views.dashboard_report import CompanyDashboardStatsView
+from docoborot.views.employee_account import EmployeeAccountView, EmployeeAccountDetailView, \
+    EmployeeAccountFieldInfoView
 from docoborot.views.reply_letter import ReplyLetterView, ReplyLetterDetailView, ReplyLetterFieldInfoView
 from docoborot.views.reply_letter_file import ReplyLetterFileView, ReplyLetterFileDetailView, \
     ReplyLetterFileFieldInfoView
 from docoborot.views.report_employees import CompanyEmployeesReportView
 from docoborot.views.report_organizations import OrganizationsReportView
+from docoborot.views.send_to_email import SendToEmailView
 from docoborot.views.task import TaskView, TaskDetailView, TaskFieldInfoView
 from docoborot.views.task_attachment import TaskAttachmentView, TaskAttachmentDetailView, TaskAttachmentFieldInfoView
 from docoborot.views.task_comment import TaskCommentView, TaskCommentDetailView, TaskCommentFieldInfoView
@@ -23,6 +26,7 @@ urlpatterns = [
     path('task/<int:pk>', TaskDetailView.as_view(), name='task_detail_view'),
     path('task/fields/', TaskFieldInfoView.as_view(), name='task_fields_info'),
     path('task/with-parts/by-id/', TaskWithPartsByIdView.as_view(), name='task-with-parts-by-id'),
+    path("task/send-to-email/", SendToEmailView.as_view(), name="send-to-email"),
 
     # TASK PART
     re_path(r'^task-part/$', TaskPartView.as_view(), name='task_part_view'),
@@ -61,6 +65,9 @@ urlpatterns = [
     path('reply-letter-file/<int:pk>', ReplyLetterFileDetailView.as_view(), name='reply_letter_file_detail_view'),
     path('reply-letter-file/fields/', ReplyLetterFileFieldInfoView.as_view(), name='reply_letter_file_fields_info'),
 
+    re_path(r'^employee-account/$', EmployeeAccountView.as_view(), name='employee_account_view'),
+    path('employee-account/<int:pk>', EmployeeAccountDetailView.as_view(), name='employee_account_detail_view'),
+    path('employee-account/fields/', EmployeeAccountFieldInfoView.as_view(), name='employee_account_fields_info'),
 
     path("dashboard/stats/", CompanyDashboardStatsView.as_view(), name="dashboard-stats"),
     path('reports/employees/', CompanyEmployeesReportView.as_view(), name='report-employees'),

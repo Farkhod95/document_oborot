@@ -97,13 +97,13 @@ class Task(BaseModel):
                 self.save(update_fields=['status', 'updated_time'])
 
             # ✅ Task IN_PROGRESS bo‘lganda signed_by ga email
-            if new_status == Task.STATUS.IN_PROGRESS and self.signed_by and self.signed_by.email:
-                send_new_task_assigned_email(
-                    to_email=self.signed_by.email,
-                    task_name=self.name or f"Task#{self.pk}",
-                    part_title="",
-                    task_id=self.pk
-                )
+            # if new_status == Task.STATUS.IN_PROGRESS and self.signed_by and self.signed_by.email:
+            #     send_new_task_assigned_email(
+            #         to_email=self.signed_by.email,
+            #         task_name=self.name or f"Task#{self.pk}",
+            #         part_title="",
+            #         task_id=self.pk
+            #     )
 
         return self.status
 
@@ -195,10 +195,10 @@ class TaskPart(BaseModel):
         message = (
             f"Assalomu alaykum!\n\n"
             f"Sizga yangi task biriktirildi.\n\n"
-            f"Task: {task_name}\n"
-            f"Bo'lim (TaskPart): {self.title}\n"
+            f"Vazifa: {task_name}\n"
+            f"Bo'lim: {self.title}\n"
             f"Status: {self.status}\n\n"
-            f"Iltimos tizimga kirib ko‘rib chiqing.\n\n"
+            f"Iltimos tizimga kirib ko‘rib chiqing.\n"
             f"Link: https://doc.optivora-group.com/"
         )
 
@@ -261,19 +261,19 @@ class TaskPart(BaseModel):
         # EMAIL NOTIFICATION (LOGIKA BUZILMASIN)
         # =========================
         # TaskPart status IN_PROGRESS ga o'tgan paytda xabar yuborish
-        try:
-            just_changed_to_in_progress = (
-                (old is not None) and (old.status != self.status) and (self.status == self.STATUS.IN_PROGRESS)
-            )
-            created_with_in_progress = (
-                (old is None) and (self.status == self.STATUS.IN_PROGRESS)
-            )
-
-            if just_changed_to_in_progress or created_with_in_progress:
-                self._send_in_progress_email()
-        except Exception:
-            # email xatosi save/logikani yiqitmasin
-            pass
+        # try:
+        #     just_changed_to_in_progress = (
+        #         (old is not None) and (old.status != self.status) and (self.status == self.STATUS.IN_PROGRESS)
+        #     )
+        #     created_with_in_progress = (
+        #         (old is None) and (self.status == self.STATUS.IN_PROGRESS)
+        #     )
+        #
+        #     if just_changed_to_in_progress or created_with_in_progress:
+        #         self._send_in_progress_email()
+        # except Exception:
+        #     # email xatosi save/logikani yiqitmasin
+        #     pass
 
 class TaskEvent(BaseModel):
     """Universal log: ‘Vazifalar tarixi’ va ‘Amalga oshirish jarayoni’ shu jadvaldan chiqadi."""
@@ -444,3 +444,24 @@ class ReplyLetterFile(BaseModel):
 
     def __str__(self):
         return f"{self.reply_letter.letter_number} - {self.title}"
+
+
+class EmployeeAccount(BaseModel):
+    class TYPE(models.TextChoices):
+        INPUT = 'input', _('Input')
+        OUTPUT = 'output', _('Output')
+
+    company = models.ForeignKey(Company, related_name='company_employee', on_delete=models.SET_NULL, null=True,
+                                blank=True, help_text=_("Kompaniya"))
+    employee = models.ForeignKey(
+        User, related_name='employee', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Hodim"))
+    date = models.DateTimeField(_('Date'), null=True, blank=True, help_text=_("Sanasi/vaqti"))
+    type = models.CharField(max_length=30, choices=TYPE.choices, help_text=_("Tip"))
+    comment = models.TextField(_('Comment'), blank=True, help_text=_("Izoh"))
+
+    class Meta:
+        verbose_name = _('Command')
+        verbose_name_plural = _('Commands')
+
+    def __str__(self):
+        return f"{self.employee.first_name} - {self.employee.last_name}"

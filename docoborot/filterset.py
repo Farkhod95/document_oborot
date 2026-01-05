@@ -1,6 +1,6 @@
 from django_filters.rest_framework import FilterSet
 
-from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile
+from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile, EmployeeAccount
 
 from docoborot.models import Task, TaskPart, TaskEvent, TaskAttachment, TaskComment
 
@@ -112,4 +112,16 @@ class ReplyLetterFileFilter(FilterSet):
         fields = {
             'reply_letter': ['exact'],
             'title': ['exact', 'icontains'],
+        }
+
+
+
+class EmployeeAccountFilter(FilterSet):
+    class Meta:
+        model = EmployeeAccount
+        fields = {
+            'company': ['exact'],
+            'employee': ['exact'],
+            'date': ['exact'],
+            'type': ['exact'],
         }

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from directory.serializers import DepartmentSerializer, DocumentFormSerializer, ListOfMagazineSerializer
-from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile
+from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile, EmployeeAccount
 from users.serializers import CompanySerializer, UserDetailSerializer
 from docoborot.models import Task, TaskPart, TaskEvent, TaskAttachment, TaskComment
 
@@ -201,3 +201,18 @@ class TaskCommentSerializer(LocaleSerializer):
             'author', 'author_detail', 'text', 'is_system',
             'created_time', 'updated_time', 'created_by', 'updated_by',
         )
+
+
+class EmployeeAccountSerializer(LocaleSerializer):
+    class Meta:
+        model = EmployeeAccount
+        fields = ('id', 'company', 'employee', 'date', 'type', 'comment')
+
+
+class EmployeeAccountListSerializer(LocaleSerializer):
+    company_detail = CompanySerializer(source='company', read_only=True)
+    employee_detail = UserDetailSerializer(source='employee', read_only=True)
+
+    class Meta:
+        model = EmployeeAccount
+        fields = ('id', 'company', 'company_detail', 'employee', 'employee_detail', 'date', 'type', 'comment')
