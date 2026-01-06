@@ -31,12 +31,6 @@ class TaskFieldInfoView(APIView):
 
 
 class TaskView(ListCreateAPIView):
-    """
-    Task (Umumiy/Parent vazifa):
-    - Hujjat bo‘yicha asosiy topshiriq.
-    - Ichida 1 yoki ko‘p TaskPart bo‘lishi mumkin (bo‘linadigan vazifa).
-    - Umumiy status odatda TaskPart statuslariga qarab yuradi.
-    """
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
     pagination_class = ResultsSetPagination
@@ -45,8 +39,9 @@ class TaskView(ListCreateAPIView):
     search_fields = ('name', 'sending_org', 'input_doc_number', 'output_doc_number', 'note')
     ordering = ['pk']
 
+    ROLE_PRIORITY = ("Admin", "Manager", "Performer", "Signatory")
+
     def _has_role(self, user, role_name: str) -> bool:
-        # 1) Agar User modelda roles M2M bo'lsa
         roles_rel = getattr(user, "roles", None)
         if roles_rel is not None:
             try:
@@ -54,22 +49,39 @@ class TaskView(ListCreateAPIView):
                     return True
             except Exception:
                 pass
-
-        # 2) Fallback: Django Group (ko‘p hollarda shu ishlaydi)
         return user.groups.filter(name__iexact=role_name).exists()
+
+    def _highest_role(self, user) -> str | None:
+        # Superuser bo‘lsa - Admindek ko‘ramiz
+        if getattr(user, "is_superuser", False):
+            return "Admin"
+
+        for role in self.ROLE_PRIORITY:
+            if self._has_role(user, role):
+                return role
+        return None
 
     def get_queryset(self):
         user = self.request.user
         qs = Task.objects.all()
 
-        if self._has_role(user, "Performer"):
-            # user object emas, id bilan filter qilish ham aniqroq bo'ladi
+        role = self._highest_role(user)
+
+        # ✅ 1) Admin/Manager -> hammasi
+        if role in ("Admin", "Manager"):
+            return qs
+
+        # ✅ 2) Performer -> eski logika
+        if role == "Performer":
             return qs.filter(parts__assignee_id=user.id).distinct()
 
-        if self._has_role(user, "Signatory"):
+        # ✅ 3) Signatory -> eski logika
+        if role == "Signatory":
             return qs.filter(signed_by_id=user.id)
 
-        return qs
+        # ✅ Hech qanday rol bo‘lmasa default (xohlasangiz qs.none() ham qilsa bo‘ladi)
+        return qs.none()
+
 
     def post(self, request):
         serializer = TaskSerializer(data=request.data)
