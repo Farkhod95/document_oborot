@@ -4,6 +4,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from typing import Optional
 
 from docoborot.models import Task
 from docoborot.serializers import TaskSerializer
@@ -30,6 +31,52 @@ class TaskFieldInfoView(APIView):
         return Response(field_info)
 
 
+class TaskSelfView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TaskSerializer
+    pagination_class = ResultsSetPagination
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend)
+    filterset_class = TaskFilter
+    search_fields = ('name', 'sending_org', 'input_doc_number', 'output_doc_number', 'note')
+    ordering = ['pk']
+
+    ROLE_PRIORITY = ("Admin", "Manager", "Performer", "Signatory")
+
+    def _has_role(self, user, role_name: str) -> bool:
+        roles_rel = getattr(user, "roles", None)
+        if roles_rel is not None:
+            try:
+                if roles_rel.filter(name__iexact=role_name).exists():
+                    return True
+            except Exception:
+                pass
+        return user.groups.filter(name__iexact=role_name).exists()
+
+    def _highest_role(self, user) -> Optional[str]:
+        # Superuser bo‘lsa - Admindek ko‘ramiz
+        if getattr(user, "is_superuser", False):
+            return "Admin"
+
+        for role in self.ROLE_PRIORITY:
+            if self._has_role(user, role):
+                return role
+        return None
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = Task.objects.all()
+
+        role = self._highest_role(user)
+
+        if role == "Performer":
+            return qs.filter(parts__assignee_id=user.id).distinct()
+
+        if role == "Signatory":
+            return qs.filter(signed_by_id=user.id)
+
+        return qs.none()
+
+
 class TaskView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
@@ -51,7 +98,8 @@ class TaskView(ListCreateAPIView):
                 pass
         return user.groups.filter(name__iexact=role_name).exists()
 
-    def _highest_role(self, user) -> str | None:
+    # def _highest_role(self, user) -> str | None:
+    def _highest_role(self, user) -> Optional[str]:
         # Superuser bo‘lsa - Admindek ko‘ramiz
         if getattr(user, "is_superuser", False):
             return "Admin"

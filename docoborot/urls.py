@@ -11,7 +11,7 @@ from docoborot.views.reply_letter_file import ReplyLetterFileView, ReplyLetterFi
 from docoborot.views.report_employees import CompanyEmployeesReportView
 from docoborot.views.report_organizations import OrganizationsReportView
 from docoborot.views.send_to_email import SendToEmailView
-from docoborot.views.task import TaskView, TaskDetailView, TaskFieldInfoView
+from docoborot.views.task import TaskView, TaskDetailView, TaskFieldInfoView, TaskSelfView
 from docoborot.views.task_attachment import TaskAttachmentView, TaskAttachmentDetailView, TaskAttachmentFieldInfoView
 from docoborot.views.task_comment import TaskCommentView, TaskCommentDetailView, TaskCommentFieldInfoView
 from docoborot.views.task_event import TaskEventView, TaskEventDetailView, TaskEventFieldInfoView
@@ -24,6 +24,7 @@ urlpatterns = [
     # TASK
     re_path(r'^task/$', TaskView.as_view(), name='task_view'),
     path('task/<int:pk>', TaskDetailView.as_view(), name='task_detail_view'),
+    path('task/self/', TaskSelfView.as_view(), name='task_self_view'),
     path('task/fields/', TaskFieldInfoView.as_view(), name='task_fields_info'),
     path('task/with-parts/by-id/', TaskWithPartsByIdView.as_view(), name='task-with-parts-by-id'),
     path("task/send-to-email/", SendToEmailView.as_view(), name="send-to-email"),
