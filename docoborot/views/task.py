@@ -39,6 +39,7 @@ class TaskSelfView(ListCreateAPIView):
     filterset_class = TaskFilter
     search_fields = ('name', 'sending_org', 'input_doc_number', 'output_doc_number', 'note')
     ordering = ['pk']
+    http_method_names = ['get']
 
     ROLE_PRIORITY = ("Admin", "Manager", "Performer", "Signatory")
 
