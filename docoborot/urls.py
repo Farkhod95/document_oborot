@@ -10,6 +10,7 @@ from docoborot.views.reply_letter_file import ReplyLetterFileView, ReplyLetterFi
     ReplyLetterFileFieldInfoView
 from docoborot.views.report_employees import CompanyEmployeesReportView
 from docoborot.views.report_organizations import OrganizationsReportView
+from docoborot.views.self_task_part_stats_by import TaskPartSelfByStartDateView
 from docoborot.views.send_to_email import SendToEmailView
 from docoborot.views.task import TaskView, TaskDetailView, TaskFieldInfoView, TaskSelfView
 from docoborot.views.task_attachment import TaskAttachmentView, TaskAttachmentDetailView, TaskAttachmentFieldInfoView
@@ -34,7 +35,7 @@ urlpatterns = [
     path('task-part/<int:pk>', TaskPartDetailView.as_view(), name='task_part_detail_view'),
     path('task-part/fields/', TaskPartFieldInfoView.as_view(), name='task_part_fields_info'),
     path('task-calendar/stats/by-start-date/', TaskPartStatsByStartDateView.as_view(), name='task-part-stats-by-start-date'),
-    path('task-calendar/self/by-start-date/', TaskPartStatsByStartDateView.as_view(), name='task-part-stats-by-start-date'),
+    path('task-calendar/self/by-start-date/', TaskPartSelfByStartDateView.as_view(), name='task-part-stats-by-start-date'),
 
     # TASK EVENT (LOG)
     re_path(r'^task-event/$', TaskEventView.as_view(), name='task_event_view'),
