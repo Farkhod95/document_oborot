@@ -163,7 +163,19 @@ class TaskDetailView(RetrieveUpdateDestroyAPIView):
 
     def delete(self, request, pk):
         instance = get_object_or_404(Task, id=pk)
-        instance.status = 'archive'
-        instance.save()
-        # instance.delete()
+        # instance.status = 'archive'
+        # instance.save()
+        instance.delete()
         return Response(nonContent(), status.HTTP_204_NO_CONTENT)
+
+class TaskArchiveView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        instance = get_object_or_404(Task, id=pk)
+
+        instance.status = 'archive'
+        instance.updated_by = request.user  # agar Task modelda updated_by bo'lsa
+        instance.save(update_fields=['status', 'updated_by'])
+
+        return Response(nonContent(), status=status.HTTP_204_NO_CONTENT)
