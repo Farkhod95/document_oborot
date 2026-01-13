@@ -28,6 +28,8 @@ class TaskPartFilter(FilterSet):
     end_date = django_filters.DateFilter(field_name='end_date', lookup_expr='date')
     show_date = django_filters.DateFilter(field_name='show_date', lookup_expr='date')
 
+    company = django_filters.NumberFilter(field_name='task__company_id')
+
     class Meta:
         model = TaskPart
         fields = {
