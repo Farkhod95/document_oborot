@@ -107,6 +107,7 @@ class TaskUnifiedItemSerializer(serializers.Serializer):
     url = serializers.CharField()  # "task" yoki "task-part"
     id = serializers.IntegerField()
     title = serializers.CharField(allow_blank=True, allow_null=True)
+    status = serializers.CharField(allow_blank=True, allow_null=True)  # ✅ qo‘shildi
     start_date = serializers.DateTimeField(allow_null=True)
     end_date = serializers.DateTimeField(allow_null=True)
     responsible_person = serializers.CharField(allow_blank=True, allow_null=True)
