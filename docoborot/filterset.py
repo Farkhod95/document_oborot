@@ -24,9 +24,9 @@ class TaskFilter(FilterSet):
 
 
 class TaskPartFilter(FilterSet):
-    start_date = django_filters.DateFromToRangeFilter(field_name='start_date', lookup_expr='date')
-    end_date   = django_filters.DateFromToRangeFilter(field_name='end_date', lookup_expr='date')
-    show_date  = django_filters.DateFromToRangeFilter(field_name='show_date', lookup_expr='date')
+    start_date = django_filters.DateFilter(field_name='start_date', lookup_expr='date')
+    end_date = django_filters.DateFilter(field_name='end_date', lookup_expr='date')
+    show_date = django_filters.DateFilter(field_name='show_date', lookup_expr='date')
 
     class Meta:
         model = TaskPart
