@@ -103,6 +103,16 @@ class ReplyLetterFileSerializer(LocaleSerializer):
         fields = ('id', 'reply_letter', 'title', 'file')
 
 
+class TaskUnifiedItemSerializer(serializers.Serializer):
+    url = serializers.CharField()  # "task" yoki "task-part"
+    id = serializers.IntegerField()
+    title = serializers.CharField(allow_blank=True, allow_null=True)
+    start_date = serializers.DateTimeField(allow_null=True)
+    end_date = serializers.DateTimeField(allow_null=True)
+    responsible_person = serializers.CharField(allow_blank=True, allow_null=True)
+    department = serializers.DictField(allow_null=True)  # {id, name} yoki null
+
+
 class TaskShortSerializer(LocaleSerializer):
     """Ichki detail uchun (TaskPart/TaskEvent/... da task_detail)"""
     company_detail = CompanySerializer(source='company', read_only=True)
