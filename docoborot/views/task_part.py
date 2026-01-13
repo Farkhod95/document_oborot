@@ -31,6 +31,20 @@ class TaskPartFieldInfoView(APIView):
         return Response(field_info)
 
 
+class SelfTaskPartFieldInfoView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated,]
+    serializer_class = TaskPartSerializer
+    pagination_class = ResultsSetPagination
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend)
+    filterset_class = TaskPartFilter
+    search_fields = ('title', 'note')
+    ordering = ['pk']
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        return TaskPart.objects.all()
+
+
 class TaskPartView(ListCreateAPIView):
     """
     TaskPart (Vazifa bo‘lagi / Subtask):
@@ -47,7 +61,9 @@ class TaskPartView(ListCreateAPIView):
     ordering = ['pk']
 
     def get_queryset(self):
-        return TaskPart.objects.all()
+        user = self.request.user
+        task_part = TaskPart.objects.filter(assignee=user)
+        return task_part
 
     def post(self, request):
         serializer = TaskPartSerializer(data=request.data)
