@@ -1,5 +1,5 @@
 from django_filters.rest_framework import FilterSet
-
+import django_filters
 from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile, EmployeeAccount
 
 from docoborot.models import Task, TaskPart, TaskEvent, TaskAttachment, TaskComment
@@ -24,6 +24,10 @@ class TaskFilter(FilterSet):
 
 
 class TaskPartFilter(FilterSet):
+    start_date = django_filters.DateFromToRangeFilter(field_name='start_date', lookup_expr='date')
+    end_date   = django_filters.DateFromToRangeFilter(field_name='end_date', lookup_expr='date')
+    show_date  = django_filters.DateFromToRangeFilter(field_name='show_date', lookup_expr='date')
+
     class Meta:
         model = TaskPart
         fields = {
@@ -32,9 +36,9 @@ class TaskPartFilter(FilterSet):
             # 'assignee': ['exact'],
             'status': ['exact'],
             'title': ['exact', 'icontains'],
-            'start_date': ['exact', 'gte', 'lte'],
-            'end_date': ['exact', 'gte', 'lte'],
-            'show_date': ['exact', 'gte', 'lte'],
+            # 'start_date': ['exact', 'gte', 'lte'],
+            # 'end_date': ['exact', 'gte', 'lte'],
+            # 'show_date': ['exact', 'gte', 'lte'],
         }
 
 

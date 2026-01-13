@@ -13,25 +13,29 @@ User = get_user_model()
 
 
 class TaskPartStatsByStartDateView(APIView):
-    """
-    POST:
-      - company_id or company: int (majburiy)
-      - year: int (majburiy)
-      - month: int (ixtiyoriy, 1-12)
-      - status: str (ixtiyoriy) -> tanlangan model STATUS qiymatlaridan biri
-      - assignee_id: int (ixtiyoriy) -> User ID
-      - target: str (ixtiyoriy) -> "auto" | "task" | "part"
-          auto: assignee_id bo'lsa roli bo'yicha tanlaydi, bo'lmasa default "part"
-          task: Task bo'yicha (signed_by kesimida)
-          part: TaskPart bo'yicha (assignee kesimida)
-
-    Response STRUCTURE O'ZGARMAYDI.
-    start_date datetime bo'lsa ham DATE bo'yicha guruhlanadi (time e'tiborsiz).
-    """
     permission_classes = [IsAuthenticated]
 
+    # ✅ Faqat kerakli 6 ta status
+    ALLOWED_STATUSES = [
+        "new",
+        "in_progress",
+        "on_review",
+        "returned",
+        "done",
+        "cancelled",
+    ]
+
+    # label'larni yo'qotmaslik uchun (i18n bilan)
+    ALLOWED_STATUS_LABELS = {
+        "new": "New",
+        "in_progress": "In progress",
+        "on_review": "On review",
+        "returned": "Returned",
+        "done": "Done",
+        "cancelled": "Cancelled",
+    }
+
     def post(self, request, *args, **kwargs):
-        # --------- input ---------
         company_id = request.data.get('company_id', None)
         if company_id is None:
             company_id = request.data.get('company', None)
@@ -42,7 +46,7 @@ class TaskPartStatsByStartDateView(APIView):
         assignee_id = request.data.get('assignee_id', None)
         target = (request.data.get('target') or 'auto').strip().lower()  # auto | task | part
 
-        # --------- validation: company_id ---------
+        # --------- company_id ---------
         try:
             company_id = int(company_id)
         except (TypeError, ValueError):
@@ -57,7 +61,7 @@ class TaskPartStatsByStartDateView(APIView):
                 status=drf_status.HTTP_400_BAD_REQUEST
             )
 
-        # --------- validation: year ---------
+        # --------- year ---------
         try:
             year = int(year)
         except (TypeError, ValueError):
@@ -66,7 +70,7 @@ class TaskPartStatsByStartDateView(APIView):
                 status=drf_status.HTTP_400_BAD_REQUEST
             )
 
-        # --------- validation: month (optional) ---------
+        # --------- month (optional) ---------
         if month is not None and month != "":
             try:
                 month = int(month)
@@ -83,7 +87,7 @@ class TaskPartStatsByStartDateView(APIView):
         else:
             month = None
 
-        # --------- validation: assignee_id (optional) ---------
+        # --------- assignee_id (optional) ---------
         assignee_user = None
         if assignee_id is not None and assignee_id != "":
             try:
@@ -103,44 +107,30 @@ class TaskPartStatsByStartDateView(APIView):
         else:
             assignee_id = None
 
-        # --------- choose model: Task vs TaskPart ---------
-        # Siz aytgandek:
-        # - Task -> signed_by (Signatory uchun)
-        # - TaskPart -> assignee (Performer uchun)
+        # --------- choose model ---------
         if target not in {"auto", "task", "part"}:
             return Response(
                 {"detail": "`target` noto‘g‘ri. Ruxsat: auto | task | part"},
                 status=drf_status.HTTP_400_BAD_REQUEST
             )
 
-        chosen = None  # "task" | "part"
-
         if target == "task":
             chosen = "task"
         elif target == "part":
             chosen = "part"
         else:
-            # auto
             if assignee_user is None:
-                chosen = "part"  # assignee_id bo'lmasa default performer kalendari (TaskPart)
+                chosen = "part"
             else:
                 is_signatory = assignee_user.roles.filter(name__iexact="Signatory").exists()
                 is_performer = assignee_user.roles.filter(name__iexact="Performer").exists()
-
                 if is_signatory and not is_performer:
                     chosen = "task"
-                elif is_performer and not is_signatory:
-                    chosen = "part"
-                elif is_signatory and is_performer:
-                    # ikkala rol bo'lsa default performer (part)
-                    chosen = "part"
                 else:
-                    # roli topilmasa ham default performer (part)
                     chosen = "part"
 
         # --------- base queryset ---------
         if chosen == "task":
-            # Task signed_by kesimida (Signatory uchun)
             qs = Task.objects.filter(
                 company_id=company_id,
                 start_date__isnull=False,
@@ -148,15 +138,12 @@ class TaskPartStatsByStartDateView(APIView):
             )
             if month is not None:
                 qs = qs.filter(start_date__month=month)
-
             if assignee_id is not None:
                 qs = qs.filter(signed_by_id=assignee_id)
 
-            STATUS_CHOICES = Task.STATUS.choices
             status_field = "status"
             start_field = "start_date"
         else:
-            # TaskPart assignee kesimida (Performer uchun)
             qs = TaskPart.objects.filter(
                 task__company_id=company_id,
                 start_date__isnull=False,
@@ -164,23 +151,22 @@ class TaskPartStatsByStartDateView(APIView):
             )
             if month is not None:
                 qs = qs.filter(start_date__month=month)
-
             if assignee_id is not None:
                 qs = qs.filter(assignee_id=assignee_id)
 
-            STATUS_CHOICES = TaskPart.STATUS.choices
             status_field = "status"
             start_field = "start_date"
 
-        # --------- validation: status (optional) - tanlangan modelga mos ---------
+        # ✅ Faqat 6 ta statusni qoldiramiz (qolganlari umuman hisoblanmaydi)
+        qs = qs.filter(**{f"{status_field}__in": self.ALLOWED_STATUSES})
+
+        # --------- status filter (optional, lekin faqat 6 tadan biri bo'lsa) ---------
         if status_param is not None and status_param != "":
-            allowed_statuses = {code for code, _ in STATUS_CHOICES}
-            if status_param not in allowed_statuses:
+            if status_param not in self.ALLOWED_STATUSES:
                 return Response(
                     {
                         "detail": "`status` noto‘g‘ri. Ruxsat etilgan qiymatlar:",
-                        "allowed": sorted(list(allowed_statuses)),
-                        "target_used": chosen,
+                        "allowed": self.ALLOWED_STATUSES,
                     },
                     status=drf_status.HTTP_400_BAD_REQUEST
                 )
@@ -200,14 +186,13 @@ class TaskPartStatsByStartDateView(APIView):
 
         total = 0
         by_status = {}
-        for code, label in STATUS_CHOICES:
+        for code in self.ALLOWED_STATUSES:
             c = overall_map.get(code, 0)
             total += c
-            by_status[code] = {"label": str(label), "count": c}
+            by_status[code] = {"label": self.ALLOWED_STATUS_LABELS.get(code, code), "count": c}
 
         # =========================
-        # 2) group by DATE(start_date) + status
-        #    (time e'tiborsiz)
+        # 2) group by DATE(start_date) + status (time e'tiborsiz)
         # =========================
         date_status_rows = (
             qs.annotate(day=TruncDate(start_field))
@@ -216,9 +201,9 @@ class TaskPartStatsByStartDateView(APIView):
               .order_by('day', status_field)
         )
 
-        grouped = {}  # {date: {status_code: count}}
+        grouped = {}
         for r in date_status_rows:
-            d = r["day"]          # date object
+            d = r["day"]
             s = r[status_field]
             c = int(r["count"])
             grouped.setdefault(d, {})
@@ -230,18 +215,17 @@ class TaskPartStatsByStartDateView(APIView):
             day_total = 0
             day_by_status = {}
 
-            for code, label in STATUS_CHOICES:
+            for code in self.ALLOWED_STATUSES:
                 c = int(status_counts.get(code, 0))
                 day_total += c
-                day_by_status[code] = {"label": str(label), "count": c}
+                day_by_status[code] = {"label": self.ALLOWED_STATUS_LABELS.get(code, code), "count": c}
 
             by_start_date.append({
-                "start_date": d.isoformat(),  # "YYYY-MM-DD"
+                "start_date": d.isoformat(),  # YYYY-MM-DD
                 "total": day_total,
                 "by_status": day_by_status,
             })
 
-        # ✅ Response strukturasi o'zgarmaydi
         return Response(
             {
                 "company_id": company_id,
