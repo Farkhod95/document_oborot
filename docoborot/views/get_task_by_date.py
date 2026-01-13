@@ -10,7 +10,7 @@ from ..models import Task, TaskPart  # pathni loyihangizga moslang
 
 class TaskTaskPartByDateView(APIView):
     """
-    GET /api/task-mix/?company_id=4&date=2026-01-12
+    GET /api/task-mix/?company=4&date=2026-01-12
 
     - Task va TaskPart start_date datetime bo'lsa ham date bo'yicha filter qiladi (time e'tiborsiz).
     - Natija: bir xil formatda list.
@@ -18,7 +18,7 @@ class TaskTaskPartByDateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        company_id = request.query_params.get("company_id")
+        company_id = request.query_params.get("company")
         date_str = request.query_params.get("date")
 
         if not company_id:
