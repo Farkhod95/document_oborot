@@ -42,7 +42,9 @@ class SelfTaskPartFieldInfoView(ListCreateAPIView):
     http_method_names = ['get']
 
     def get_queryset(self):
-        return TaskPart.objects.all()
+        user = self.request.user
+        task_part = TaskPart.objects.filter(assignee=user)
+        return task_part
 
 
 class TaskPartView(ListCreateAPIView):
@@ -61,9 +63,7 @@ class TaskPartView(ListCreateAPIView):
     ordering = ['pk']
 
     def get_queryset(self):
-        user = self.request.user
-        task_part = TaskPart.objects.filter(assignee=user)
-        return task_part
+        return TaskPart.objects.all()
 
     def post(self, request):
         serializer = TaskPartSerializer(data=request.data)
