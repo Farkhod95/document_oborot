@@ -41,41 +41,45 @@ class TaskSelfView(ListCreateAPIView):
     ordering = ['pk']
     http_method_names = ['get']
 
-    ROLE_PRIORITY = ("Admin", "Manager", "Performer", "Signatory")
-
-    def _has_role(self, user, role_name: str) -> bool:
-        roles_rel = getattr(user, "roles", None)
-        if roles_rel is not None:
-            try:
-                if roles_rel.filter(name__iexact=role_name).exists():
-                    return True
-            except Exception:
-                pass
-        return user.groups.filter(name__iexact=role_name).exists()
-
-    def _highest_role(self, user) -> Optional[str]:
-        # Superuser bo‘lsa - Admindek ko‘ramiz
-        if getattr(user, "is_superuser", False):
-            return "Admin"
-
-        for role in self.ROLE_PRIORITY:
-            if self._has_role(user, role):
-                return role
-        return None
-
     def get_queryset(self):
         user = self.request.user
-        qs = Task.objects.all()
-
-        role = self._highest_role(user)
-
-        if role == "Performer":
-            return qs.filter(parts__assignee_id=user.id).distinct()
-
-        if role == "Signatory":
-            return qs.filter(signed_by_id=user.id)
-
-        return qs.none()
+        task_part = Task.objects.filter(signed_by=user)
+        return task_part
+    # ROLE_PRIORITY = ("Admin", "Manager", "Performer", "Signatory")
+    #
+    # def _has_role(self, user, role_name: str) -> bool:
+    #     roles_rel = getattr(user, "roles", None)
+    #     if roles_rel is not None:
+    #         try:
+    #             if roles_rel.filter(name__iexact=role_name).exists():
+    #                 return True
+    #         except Exception:
+    #             pass
+    #     return user.groups.filter(name__iexact=role_name).exists()
+    #
+    # def _highest_role(self, user) -> Optional[str]:
+    #     # Superuser bo‘lsa - Admindek ko‘ramiz
+    #     if getattr(user, "is_superuser", False):
+    #         return "Admin"
+    #
+    #     for role in self.ROLE_PRIORITY:
+    #         if self._has_role(user, role):
+    #             return role
+    #     return None
+    #
+    # def get_queryset(self):
+    #     user = self.request.user
+    #     qs = Task.objects.all()
+    #
+    #     role = self._highest_role(user)
+    #
+    #     if role == "Performer":
+    #         return qs.filter(parts__assignee_id=user.id).distinct()
+    #
+    #     if role == "Signatory":
+    #         return qs.filter(signed_by_id=user.id)
+    #
+    #     return qs.none()
 
 
 class TaskView(ListCreateAPIView):
@@ -87,50 +91,51 @@ class TaskView(ListCreateAPIView):
     search_fields = ('name', 'sending_org', 'input_doc_number', 'output_doc_number', 'note')
     ordering = ['pk']
 
-    ROLE_PRIORITY = ("Admin", "Manager", "Performer", "Signatory")
-
-    def _has_role(self, user, role_name: str) -> bool:
-        roles_rel = getattr(user, "roles", None)
-        if roles_rel is not None:
-            try:
-                if roles_rel.filter(name__iexact=role_name).exists():
-                    return True
-            except Exception:
-                pass
-        return user.groups.filter(name__iexact=role_name).exists()
-
-    # def _highest_role(self, user) -> str | None:
-    def _highest_role(self, user) -> Optional[str]:
-        # Superuser bo‘lsa - Admindek ko‘ramiz
-        if getattr(user, "is_superuser", False):
-            return "Admin"
-
-        for role in self.ROLE_PRIORITY:
-            if self._has_role(user, role):
-                return role
-        return None
-
+    # ROLE_PRIORITY = ("Admin", "Manager", "Performer", "Signatory")
+    #
+    # def _has_role(self, user, role_name: str) -> bool:
+    #     roles_rel = getattr(user, "roles", None)
+    #     if roles_rel is not None:
+    #         try:
+    #             if roles_rel.filter(name__iexact=role_name).exists():
+    #                 return True
+    #         except Exception:
+    #             pass
+    #     return user.groups.filter(name__iexact=role_name).exists()
+    #
+    # # def _highest_role(self, user) -> str | None:
+    # def _highest_role(self, user) -> Optional[str]:
+    #     # Superuser bo‘lsa - Admindek ko‘ramiz
+    #     if getattr(user, "is_superuser", False):
+    #         return "Admin"
+    #
+    #     for role in self.ROLE_PRIORITY:
+    #         if self._has_role(user, role):
+    #             return role
+    #     return None
+    #
+    # def get_queryset(self):
+    #     user = self.request.user
+    #     qs = Task.objects.all()
+    #
+    #     role = self._highest_role(user)
+    #
+    #     # ✅ 1) Admin/Manager -> hammasi
+    #     if role in ("Admin", "Manager"):
+    #         return qs
+    #
+    #     # ✅ 2) Performer -> eski logika
+    #     if role == "Performer":
+    #         return qs.filter(parts__assignee_id=user.id).distinct()
+    #
+    #     # ✅ 3) Signatory -> eski logika
+    #     if role == "Signatory":
+    #         return qs.filter(signed_by_id=user.id)
+    #
+    #     # ✅ Hech qanday rol bo‘lmasa default (xohlasangiz qs.none() ham qilsa bo‘ladi)
+    #     return qs.none()
     def get_queryset(self):
-        user = self.request.user
-        qs = Task.objects.all()
-
-        role = self._highest_role(user)
-
-        # ✅ 1) Admin/Manager -> hammasi
-        if role in ("Admin", "Manager"):
-            return qs
-
-        # ✅ 2) Performer -> eski logika
-        if role == "Performer":
-            return qs.filter(parts__assignee_id=user.id).distinct()
-
-        # ✅ 3) Signatory -> eski logika
-        if role == "Signatory":
-            return qs.filter(signed_by_id=user.id)
-
-        # ✅ Hech qanday rol bo‘lmasa default (xohlasangiz qs.none() ham qilsa bo‘ladi)
-        return qs.none()
-
+        return Task.objects.all()
 
     def post(self, request):
         serializer = TaskSerializer(data=request.data)
