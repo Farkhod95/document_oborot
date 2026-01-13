@@ -26,6 +26,7 @@ class TaskTaskPartByDateView(APIView):
         tasks_qs = (
             Task.objects
             .filter(company_id=company_id, start_date__date=d)
+            .exclude(status__in=["archive", "expired"])
             .select_related("signed_by", "department")
         )
 
@@ -118,6 +119,7 @@ class SelfTaskTaskPartByDateView(APIView):
         tasks_qs = (
             Task.objects
             .filter(company_id=company_id, start_date__date=d, signed_by_id=user_id)
+            .exclude(status__in=["archive", "expired"])
             .select_related("signed_by", "department")
         )
 
