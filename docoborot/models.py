@@ -80,12 +80,12 @@ class Task(BaseModel):
             statuses = set(qs.values_list('status', flat=True))
             if statuses.issubset({TaskPart.STATUS.DONE}):
                 new_status = Task.STATUS.DONE
-            elif TaskPart.STATUS.CANCELLED in statuses and len(statuses) == 1:
-                new_status = Task.STATUS.CANCELLED
-            elif TaskPart.STATUS.ON_REVIEW in statuses:
-                new_status = Task.STATUS.ON_REVIEW
-            elif TaskPart.STATUS.RETURNED in statuses:
-                new_status = Task.STATUS.RETURNED
+            # elif TaskPart.STATUS.CANCELLED in statuses and len(statuses) == 1:
+            #     new_status = Task.STATUS.CANCELLED
+            # elif TaskPart.STATUS.ON_REVIEW in statuses:
+            #     new_status = Task.STATUS.ON_REVIEW
+            # elif TaskPart.STATUS.RETURNED in statuses:
+            #     new_status = Task.STATUS.RETURNED
             elif TaskPart.STATUS.IN_PROGRESS in statuses or TaskPart.STATUS.DONE in statuses:
                 new_status = Task.STATUS.IN_PROGRESS
             else:
