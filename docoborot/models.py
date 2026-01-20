@@ -52,6 +52,8 @@ class Task(BaseModel):
     end_date = models.DateTimeField(_('End date'), null=True, blank=True, help_text=_("Tugash sanasi/vaqti"))
     priority = models.CharField(choices=PRIORITY.choices, max_length=12, null=True, blank=True, help_text=_("Muhimligi"))
     sending_respon_person = models.CharField(_('Responsible person for sending'), max_length=255, null=True, blank=True, help_text=_("Yuborish uchun mas'ul shaxs"))
+    respon_person = models.ForeignKey(User, related_name='tasks_respon_person', on_delete=models.CASCADE, null=True, blank=True,
+                                  verbose_name=_('Masul shaxs'))
     department = models.ForeignKey(Department, related_name='tasks', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Bo‘lim"))
     list_of_magazine = models.ForeignKey(ListOfMagazine, related_name='list_of_magazine_task', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Jurnal nomi"))
     signed_by = models.ForeignKey(User, related_name='tasks_signed_by', on_delete=models.CASCADE, null=True, blank=True, verbose_name=_('Imzolovchi'))

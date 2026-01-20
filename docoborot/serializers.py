@@ -140,6 +140,7 @@ class TaskSerializer(LocaleSerializer):
     task_form_detail = DocumentFormSerializer(source='task_form', read_only=True)
     department_detail = DepartmentSerializer(source='department', read_only=True)
     signed_by_detail = UserDetailSerializer(source='signed_by', read_only=True)
+    respon_person_detail = UserDetailSerializer(source='respon_person', read_only=True)
     created_by_detail = UserDetailSerializer(source='created_by', read_only=True)
     list_of_magazine_detail = ListOfMagazineSerializer(source='list_of_magazine', read_only=True)
 
@@ -150,7 +151,8 @@ class TaskSerializer(LocaleSerializer):
             'task_form', 'task_form_detail', 'sending_org', 'input_doc_number', 'output_doc_number',
             'start_date', 'end_date', 'priority', 'sending_respon_person',
             'department', 'department_detail', 'signed_by', 'signed_by_detail', 'signed_date', 'note',
-            'created_time', 'updated_time', 'created_by', 'created_by_detail', 'updated_by', 'list_of_magazine', 'list_of_magazine_detail'
+            'created_time', 'updated_time', 'created_by', 'created_by_detail', 'updated_by', 'list_of_magazine',
+            'list_of_magazine_detail', 'respon_person', 'respon_person_detail'
         )
 
 
