@@ -133,29 +133,29 @@ class TaskPartStatsByStartDateView(APIView):
         if chosen == "task":
             qs = Task.objects.filter(
                 company_id=company_id,
-                start_date__isnull=False,
-                start_date__year=year,
+                end_date__isnull=False,
+                end_date__year=year,
             )
             if month is not None:
-                qs = qs.filter(start_date__month=month)
+                qs = qs.filter(end_date__month=month)
             if assignee_id is not None:
                 qs = qs.filter(signed_by_id=assignee_id)
 
             status_field = "status"
-            start_field = "start_date"
+            start_field = "end_date"
         else:
             qs = TaskPart.objects.filter(
                 task__company_id=company_id,
-                start_date__isnull=False,
-                start_date__year=year,
+                end_date__isnull=False,
+                end_date__year=year,
             )
             if month is not None:
-                qs = qs.filter(start_date__month=month)
+                qs = qs.filter(end_date__month=month)
             if assignee_id is not None:
                 qs = qs.filter(assignee_id=assignee_id)
 
             status_field = "status"
-            start_field = "start_date"
+            start_field = "end_date"
 
         # ✅ Faqat 6 ta statusni qoldiramiz (qolganlari umuman hisoblanmaydi)
         qs = qs.filter(**{f"{status_field}__in": self.ALLOWED_STATUSES})

@@ -103,12 +103,12 @@ class TaskPartSelfByStartDateView(APIView):
             task_qs = Task.objects.filter(
                 company_id=company_id,
                 signed_by_id=user.id,
-                start_date__isnull=False,
-                start_date__year=year,
+                end_date__isnull=False,
+                end_date__year=year,
                 status__in=self.ALLOWED_STATUSES,
             )
             if month is not None:
-                task_qs = task_qs.filter(start_date__month=month)
+                task_qs = task_qs.filter(end_date__month=month)
             if status_param is not None:
                 task_qs = task_qs.filter(status=status_param)
 
@@ -116,12 +116,12 @@ class TaskPartSelfByStartDateView(APIView):
             part_qs = TaskPart.objects.filter(
                 task__company_id=company_id,
                 assignee_id=user.id,
-                start_date__isnull=False,
-                start_date__year=year,
+                end_date__isnull=False,
+                end_date__year=year,
                 status__in=self.ALLOWED_STATUSES,
             )
             if month is not None:
-                part_qs = part_qs.filter(start_date__month=month)
+                part_qs = part_qs.filter(end_date__month=month)
             if status_param is not None:
                 part_qs = part_qs.filter(status=status_param)
 
@@ -154,12 +154,12 @@ class TaskPartSelfByStartDateView(APIView):
         # 2) by_start_date (DATE bo'yicha, Task + TaskPart qo'shib)
         # =========================
         task_rows = (
-            task_qs.annotate(day=TruncDate("start_date"))
+            task_qs.annotate(day=TruncDate("end_date"))
                    .values("day", "status")
                    .annotate(count=Count("id"))
         )
         part_rows = (
-            part_qs.annotate(day=TruncDate("start_date"))
+            part_qs.annotate(day=TruncDate("end_date"))
                    .values("day", "status")
                    .annotate(count=Count("id"))
         )
