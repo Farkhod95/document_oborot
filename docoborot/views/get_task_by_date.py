@@ -25,14 +25,14 @@ class TaskTaskPartByDateView(APIView):
 
         tasks_qs = (
             Task.objects
-            .filter(company_id=company_id, start_date__date=d)
+            .filter(company_id=company_id, end_date__date=d)
             .exclude(status__in=["archive", "expired"])
             .select_related("signed_by", "department")
         )
 
         parts_qs = (
             TaskPart.objects
-            .filter(task__company_id=company_id, start_date__date=d)
+            .filter(task__company_id=company_id, end_date__date=d)
             .select_related("assignee", "department", "task")
         )
 
@@ -82,7 +82,7 @@ class TaskTaskPartByDateView(APIView):
                 "department": dept,
             })
 
-        results.sort(key=lambda x: (x["start_date"] is None, x["start_date"]))
+        results.sort(key=lambda x: (x["end_date"] is None, x["end_date"]))
 
         serializer = TaskUnifiedItemSerializer(results, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -92,8 +92,8 @@ class SelfTaskTaskPartByDateView(APIView):
     """
     GET /task-calendar/self/get-task-by-date/?company=4&date=2026-01-12&user_id=10
 
-    - Task: company + date(start_date__date) + signed_by=user_id
-    - TaskPart: task.company + date(start_date__date) + assignee=user_id
+    - Task: company + date(end_date__date) + signed_by=user_id
+    - TaskPart: task.company + date(end_date__date) + assignee=user_id
     """
     permission_classes = [IsAuthenticated]
 
@@ -118,7 +118,7 @@ class SelfTaskTaskPartByDateView(APIView):
         # ✅ TASK: company + date + signed_by=user_id
         tasks_qs = (
             Task.objects
-            .filter(company_id=company_id, start_date__date=d, signed_by_id=user_id)
+            .filter(company_id=company_id, end_date__date=d, signed_by_id=user_id)
             .exclude(status__in=["archive", "expired"])
             .select_related("signed_by", "department")
         )
@@ -126,7 +126,7 @@ class SelfTaskTaskPartByDateView(APIView):
         # ✅ TASK PART: task.company + date + assignee=user_id
         parts_qs = (
             TaskPart.objects
-            .filter(task__company_id=company_id, start_date__date=d, assignee_id=user_id)
+            .filter(task__company_id=company_id, end_date__date=d, assignee_id=user_id)
             .select_related("assignee", "department", "task")
         )
 
@@ -172,7 +172,7 @@ class SelfTaskTaskPartByDateView(APIView):
                 "department": dept,
             })
 
-        results.sort(key=lambda x: (x["start_date"] is None, x["start_date"]))
+        results.sort(key=lambda x: (x["end_date"] is None, x["end_date"]))
 
         serializer = TaskUnifiedItemSerializer(results, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
