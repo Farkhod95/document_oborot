@@ -8,12 +8,12 @@ from docoborot.models import Task
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)
 def send_task_emails_task(self, task_id: int) -> dict:
     """
-    Background: Task.signed_by va TaskPart.assignee email'lariga xabar yuboradi
+    Background: Task.signed_by, Task.respon_person va TaskPart.assignee email'lariga xabar yuboradi.
     """
     try:
         task = (
             Task.objects
-            .select_related("signed_by", "company", "department")
+            .select_related("signed_by", "respon_person", "company", "department")
             .prefetch_related("parts__assignee", "parts__department")
             .filter(id=task_id)
             .first()
@@ -22,10 +22,12 @@ def send_task_emails_task(self, task_id: int) -> dict:
             return {"ok": False, "detail": f"Task topilmadi: {task_id}"}
 
         task_name = task.name or f"Task#{task.id}"
-        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", settings.EMAIL_HOST_USER)
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", getattr(settings, "EMAIL_HOST_USER", None))
         base_link = getattr(settings, "FRONTEND_URL", "https://doc.optivora-group.com/")
 
+        # Statistikalar
         sent_to_signed_by = False
+        sent_to_respon_person = False
         sent_to_assignees_count = 0
         skipped_assignees_no_email = 0
 
@@ -50,6 +52,28 @@ def send_task_emails_task(self, task_id: int) -> dict:
                 fail_silently=False,
             )
             sent_to_signed_by = True
+
+        # 1.1) respon_person ga email (YANGI)
+        if task.respon_person and task.respon_person.email:
+            subject = "Siz mas’ul shaxs etib biriktirildingiz"
+            msg = (
+                "Assalomu alaykum!\n\n"
+                "Siz ushbu vazifa uchun mas’ul shaxs etib belgilandingiz.\n\n"
+                f"Vazifa: {task_name}\n"
+                f"Status: {task.status}\n"
+                f"Boshlash: {task.start_date or '-'}\n"
+                f"Tugash: {task.end_date or '-'}\n\n"
+                "Iltimos tizimga kirib nazorat qiling.\n"
+                f"Link: {base_link}\n"
+            )
+            send_mail(
+                subject=subject,
+                message=msg,
+                from_email=from_email,
+                recipient_list=[task.respon_person.email],
+                fail_silently=False,
+            )
+            sent_to_respon_person = True
 
         # 2) assignee'larga email (unique)
         assignee_emails = set()
@@ -84,10 +108,10 @@ def send_task_emails_task(self, task_id: int) -> dict:
             "task_id": task.id,
             "task_name": task_name,
             "sent_to_signed_by": sent_to_signed_by,
+            "sent_to_respon_person": sent_to_respon_person,
             "sent_to_assignees_count": sent_to_assignees_count,
             "skipped_assignees_no_email": skipped_assignees_no_email,
         }
 
     except Exception as exc:
-        # qayta urinib ko‘rish (retry)
         raise self.retry(exc=exc)
