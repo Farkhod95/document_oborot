@@ -41,7 +41,7 @@ class Task(BaseModel):
     task_type = models.CharField(choices=TASK_TYPE.choices, max_length=20, default=TASK_TYPE.TASK_TYPE1, help_text=_("Vazifa turi"))
     company = models.ForeignKey(Company, related_name='tasks', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Kompaniya"))
     type = models.CharField(choices=TYPE.choices, max_length=12, null=True, blank=True, help_text=_("Tip"))
-    name = models.CharField(_('Task number'), max_length=100, null=True, blank=True, help_text=_("Task raqami"))
+    name = models.CharField(_('Task number'), max_length=500, null=True, blank=True, help_text=_("Task raqami"))
     task_form = models.ForeignKey(DocumentForm, related_name='tasks', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Hujjat shakli"))
     sending_org = models.CharField(_('Sending'), max_length=255, null=True, blank=True, help_text=_("Yuboruvchi tashkilot"))
     input_doc_number = models.CharField(_('Input doc number'), max_length=255, null=True, blank=True, help_text=_("Kiruvchi hujjat raqami"))
@@ -123,7 +123,7 @@ class TaskPart(BaseModel):
         EXPIRED = 'expired', _('Expired')
 
     task = models.ForeignKey(Task, related_name='parts', on_delete=models.CASCADE)
-    title = models.CharField(_('Section / Part title'), max_length=255, help_text=_("Bo‘lim nomi"))
+    title = models.CharField(_('Section / Part title'), max_length=500, help_text=_("Bo‘lim nomi"))
     department = models.ForeignKey(
         Department, related_name='task_parts',
         on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Bo‘lim")
