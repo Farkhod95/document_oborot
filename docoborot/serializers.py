@@ -122,7 +122,7 @@ class TaskShortSerializer(LocaleSerializer):
 
     class Meta:
         model = Task
-        fields = ('id', 'name', 'status', 'type', 'priority', 'company', 'company_detail', 'department', 'department_detail', 'list_of_magazine', 'list_of_magazine_detail', 'task_type')
+        fields = ('id', 'name', 'status', 'type', 'priority', 'company', 'company_detail', 'department', 'department_detail', 'list_of_magazine', 'list_of_magazine_detail', 'task_type', 'is_read_file')
 
 
 class TaskPartShortSerializer(LocaleSerializer):
@@ -132,7 +132,7 @@ class TaskPartShortSerializer(LocaleSerializer):
 
     class Meta:
         model = TaskPart
-        fields = ('id', 'task', 'title', 'status', 'assignee', 'assignee_detail', 'department', 'department_detail', 'start_date', 'end_date', 'show_date')
+        fields = ('id', 'task', 'title', 'status', 'assignee', 'assignee_detail', 'department', 'department_detail', 'start_date', 'end_date', 'show_date', 'is_read_file')
 
 
 class TaskSerializer(LocaleSerializer):
@@ -152,7 +152,7 @@ class TaskSerializer(LocaleSerializer):
             'start_date', 'end_date', 'priority', 'sending_respon_person',
             'department', 'department_detail', 'signed_by', 'signed_by_detail', 'signed_date', 'note',
             'created_time', 'updated_time', 'created_by', 'created_by_detail', 'updated_by', 'list_of_magazine',
-            'list_of_magazine_detail', 'respon_person', 'respon_person_detail'
+            'list_of_magazine_detail', 'respon_person', 'respon_person_detail', 'is_read_file'
         )
 
 
@@ -166,7 +166,7 @@ class TaskPartSerializer(LocaleSerializer):
         fields = (
             'id', 'task', 'task_detail', 'title', 'department', 'department_detail',
             'assignee', 'assignee_detail', 'start_date', 'end_date', 'status', 'note',
-            'created_time', 'updated_time', 'created_by', 'updated_by', 'show_date'
+            'created_time', 'updated_time', 'created_by', 'updated_by', 'show_date', 'is_read_file'
         )
 
 
@@ -199,7 +199,7 @@ class TaskAttachmentSerializer(LocaleSerializer):
         fields = (
             'id', 'task', 'task_detail', 'part', 'part_detail', 'comment', 'link',
             'title', 'file', 'uploaded_by', 'uploaded_by_detail',
-            'created_time', 'updated_time', 'created_by', 'updated_by',
+            'created_time', 'updated_time', 'created_by', 'updated_by', 'is_read_file',
         )
 
 

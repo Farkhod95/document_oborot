@@ -60,6 +60,7 @@ class Task(BaseModel):
     # signed_date = models.DateField(_('Signed date'), null=True, blank=True, help_text=_("Imzolangan sanasi"))
     signed_date = models.DateTimeField(_('Signed date'), null=True, blank=True, help_text=_("Imzolangan sanasi/vaqti"))
     note = models.TextField(_('Note'), blank=True, help_text=_("Izoh"))
+    is_read_file = models.BooleanField(default=True, help_text=_("Ko'rildimi?"))
 
     class Meta:
         verbose_name = _('Task')
@@ -71,6 +72,21 @@ class Task(BaseModel):
     @property
     def is_split(self) -> bool:
         return self.parts.count() > 1
+
+    def recompute_is_read_file(self, save: bool = True) -> bool:
+        """
+        Task ga tegishli attachmentlardan bittasi bo'lsa ham is_read_file=False bo'lsa,
+        Task.is_read_file=False bo'ladi. Aks holda True.
+        """
+        has_unread = self.attachments.filter(is_read_file=False).exists()
+        new_value = not has_unread
+
+        if self.is_read_file != new_value:
+            self.is_read_file = new_value
+            if save:
+                self.save(update_fields=["is_read_file", "updated_time"])
+        return self.is_read_file
+
 
     def recompute_status(self, save: bool = True) -> str:
         qs = self.parts.all()
@@ -137,6 +153,7 @@ class TaskPart(BaseModel):
     status = models.CharField(choices=STATUS.choices, max_length=20, default=STATUS.NEW, help_text=_("Holati"))
     show_date = models.DateTimeField(_('Show date'), null=True, blank=True, help_text=_("Ko'rish vaqti sanasi"))
     note = models.TextField(blank=True, help_text=_("Izoh"))
+    is_read_file = models.BooleanField(default=False, help_text=_("Ko'rildimi?"))
 
     class Meta:
         verbose_name = _('Task Part')
@@ -211,6 +228,20 @@ class TaskPart(BaseModel):
             recipient_list=recipients,
             fail_silently=False,
         )
+
+    def recompute_is_read_file(self, save: bool = True) -> bool:
+        """
+        TaskPart ga tegishli attachmentlardan bittasi bo'lsa ham is_read_file=False bo'lsa,
+        TaskPart.is_read_file=False bo'ladi. Aks holda True.
+        """
+        has_unread = self.attachments.filter(is_read_file=False).exists()
+        new_value = not has_unread
+
+        if self.is_read_file != new_value:
+            self.is_read_file = new_value
+            if save:
+                self.save(update_fields=["is_read_file", "updated_time"])
+        return self.is_read_file
 
     def save(self, *args, actor=None, **kwargs):
         """actor berilsa logga kim o‘zgartirgani yoziladi."""
@@ -354,6 +385,7 @@ class TaskAttachment(BaseModel):
     file = models.FileField(upload_to='task_files/%Y/%m/%d/', null=True, blank=True, help_text=_("Fayl"))
     link = models.CharField(_('Link'), max_length=255, null=True, blank=True, help_text=_("Havola"))
     uploaded_by = models.ForeignKey(User, related_name='task_files', on_delete=models.SET_NULL, null=True, blank=True, help_text=_("Kim yukladi"))
+    is_read_file = models.BooleanField(default=False, help_text=_("Ko'rildimi?"))
 
     class Meta:
         verbose_name = _('Task Attachment')
@@ -388,6 +420,15 @@ class TaskAttachment(BaseModel):
                 "link": (self.link if self.link else None),
             }
         )
+
+        # 1) Agar attachment partga tegishli bo'lsa — part flag
+        if self.part_id:
+            self.part.recompute_is_read_file(save=True)
+            self.task.recompute_is_read_file(save=True)
+        # 2) Task flag: attachment qaysi taskga tegishli bo'lsa shu task bo'yicha
+        #    (part attachmentlari ham taskga tegishli bo'lib turadi)
+        # if self.task_id:
+        #     self.task.recompute_is_read_file(save=True)
 
 
 class Command(BaseModel):

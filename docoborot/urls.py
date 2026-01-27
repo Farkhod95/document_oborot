@@ -14,7 +14,8 @@ from docoborot.views.report_organizations import OrganizationsReportView
 from docoborot.views.self_task_part_stats_by import TaskPartSelfByStartDateView
 from docoborot.views.send_to_email import SendToEmailView
 from docoborot.views.task import TaskView, TaskDetailView, TaskFieldInfoView, TaskSelfView, TaskArchiveView
-from docoborot.views.task_attachment import TaskAttachmentView, TaskAttachmentDetailView, TaskAttachmentFieldInfoView
+from docoborot.views.task_attachment import TaskAttachmentView, TaskAttachmentDetailView, TaskAttachmentFieldInfoView, \
+    TaskAttachmentIsReadView
 from docoborot.views.task_comment import TaskCommentView, TaskCommentDetailView, TaskCommentFieldInfoView
 from docoborot.views.task_event import TaskEventView, TaskEventDetailView, TaskEventFieldInfoView
 from docoborot.views.task_part import TaskPartView, TaskPartDetailView, TaskPartFieldInfoView, SelfTaskPartFieldInfoView
@@ -51,6 +52,7 @@ urlpatterns = [
     re_path(r'^task-attachment/$', TaskAttachmentView.as_view(), name='task_attachment_view'),
     path('task-attachment/<int:pk>', TaskAttachmentDetailView.as_view(), name='task_attachment_detail_view'),
     path('task-attachment/fields/', TaskAttachmentFieldInfoView.as_view(), name='task_attachment_fields_info'),
+    path('task-attachment/<int:pk>/isread', TaskAttachmentIsReadView.as_view(), name='task_attachment_is_read_view'),
 
     # TASK COMMENT
     re_path(r'^task-comment/$', TaskCommentView.as_view(), name='task_comment_view'),

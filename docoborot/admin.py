@@ -34,27 +34,27 @@ class ReplyLetterFileAdmin(admin.ModelAdmin):
 
 @admin.register(TaskAttachment)
 class TaskAttachmentAdmin(admin.ModelAdmin):
-    list_display = ('task', 'title', 'part', 'link')
-    fields =  ('task', 'title', 'file', 'part', 'link')
+    list_display = ('task', 'title', 'part', 'link', 'is_read_file')
+    fields =  ('task', 'title', 'file', 'part', 'link', 'is_read_file')
     search_fields = ('task__name', 'title', 'part__title')
 
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ('status', 'company', 'type', 'task_type')
+    list_display = ('status', 'company', 'type', 'task_type', 'is_read_file')
     fields =  ('status', 'company', 'type', 'name',
             'task_form', 'sending_org', 'input_doc_number', 'output_doc_number',
             'start_date', 'end_date', 'priority', 'sending_respon_person',
             'department', 'signed_by', 'note', 'task_type',
-            'created_by', 'updated_by', 'list_of_magazine')
+            'created_by', 'updated_by', 'list_of_magazine', 'is_read_file')
     search_fields = ('status', 'company__name',)
 
 
 @admin.register(TaskPart)
 class TaskPartAdmin(admin.ModelAdmin):
-    list_display = ('task', 'title',)
+    list_display = ('task', 'title', 'is_read_file')
     fields =  ('task', 'title', 'department',
-            'assignee', 'start_date', 'end_date', 'status', 'note', 'created_by', 'updated_by',)
+            'assignee', 'start_date', 'end_date', 'status', 'note', 'created_by', 'updated_by', 'is_read_file')
     search_fields = ('task__name', 'title')
 
 

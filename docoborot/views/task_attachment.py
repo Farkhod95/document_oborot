@@ -81,3 +81,14 @@ class TaskAttachmentDetailView(RetrieveUpdateDestroyAPIView):
         instance = get_object_or_404(TaskAttachment, id=pk)
         instance.delete()
         return Response(nonContent(), status.HTTP_204_NO_CONTENT)
+
+
+class TaskAttachmentIsReadView(APIView):
+    def patch(self, request, pk):
+        instance = get_object_or_404(TaskAttachment, pk=pk)
+
+        if not instance.is_read_file:
+            instance.is_read_file = True
+            instance.save(update_fields=["is_read_file", "updated_time"])
+
+        return Response({"message": "Successfully completed!"}, status=status.HTTP_200_OK)
