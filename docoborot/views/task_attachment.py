@@ -31,7 +31,7 @@ class TaskAttachmentFieldInfoView(APIView):
         return Response(field_info)
 
 
-class TaskAttachmentAllView(ListCreateAPIView):
+class  TaskAttachmentAllView(ListCreateAPIView):
     permission_classes = [IsAuthenticated,]
     serializer_class = TaskAttachmentSerializer
     pagination_class = ResultsSetPagination
@@ -54,7 +54,7 @@ class TaskAttachmentAllView(ListCreateAPIView):
             # ✅ 2) Shu task'ning status=done bo'lgan partlariga bog'langan attachmentlar
             qs = qs.filter(
                 Q(task_id=task_id) |
-                Q(part__task_id=task_id, part__status=TaskPart.STATUS.DONE)
+                Q(part__task_id=task_id, part__status='done')
             ).distinct()
 
         return qs
