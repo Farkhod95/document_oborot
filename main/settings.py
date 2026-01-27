@@ -94,12 +94,23 @@ TEMPLATES = [
     },
 ]
 
-# CELERY_BEAT_SCHEDULE = {
-#     "expire-overdue-task-parts-every-5-min": {
-#         "task": "your_app.tasks.expire_overdue_task_parts",
-#         "schedule": crontab(minute="*/5"),  # har 5 daqiqada
-#     },
-# }
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/2",  # alohida DB (0/1 band, 2 ishlatamiz)
+        "OPTIONS": {
+            "client_class": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# ✅ har 2 soatda deadline reminder tekshirish
+CELERY_BEAT_SCHEDULE = {
+    "deadline-reminders-every-2-hours": {
+        "task": "docoborot.tasks.send_deadline_reminders_task",
+        "schedule": crontab(minute=0, hour="*/2"),  # har 2 soatda
+    },
+}
 
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
