@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, filters
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, get_object_or_404
@@ -5,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from docoborot.models import TaskAttachment
+from docoborot.models import TaskAttachment, TaskPart
 from docoborot.serializers import TaskAttachmentSerializer
 from docoborot.filterset import TaskAttachmentFilter
 
@@ -28,6 +29,36 @@ class TaskAttachmentFieldInfoView(APIView):
                 "choices": dict(field.choices) if field.choices else None
             })
         return Response(field_info)
+
+
+class TaskAttachmentAllView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated,]
+    serializer_class = TaskAttachmentSerializer
+    pagination_class = ResultsSetPagination
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend)
+    filterset_class = TaskAttachmentFilter
+    search_fields = ('title', 'file')
+    ordering = ['pk']
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        qs = (
+            TaskAttachment.objects
+            .select_related('task', 'part', 'comment', 'uploaded_by')
+            .all()
+        )
+
+        task_id = self.request.query_params.get('task')
+        if task_id:
+            # ✅ 1) Task'ga bevosita bog'langan attachmentlar (task_id=task_id)
+            # ✅ 2) Shu task'ning status=done bo'lgan partlariga bog'langan attachmentlar
+            qs = qs.filter(
+                Q(task_id=task_id) |
+                Q(part__task_id=task_id, part__status=TaskPart.STATUS.DONE)
+            ).distinct()
+
+        return qs
+
 
 
 class TaskAttachmentView(ListCreateAPIView):
