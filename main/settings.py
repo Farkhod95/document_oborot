@@ -125,28 +125,28 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Tashkent"
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'doc_oborot_db',
-        'USER': 'postgres',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 #         'NAME': 'doc_oborot_db',
-#         'USER': 'doc_oborot_user',
-#         'PASSWORD': 'doc_oborot_password',
+#         'USER': 'postgres',
+#         'PASSWORD': 'root',
 #         'HOST': 'localhost',
 #         'PORT': '5432',
 #     }
 # }
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'doc_oborot_db',
+        'USER': 'doc_oborot_user',
+        'PASSWORD': 'doc_oborot_password',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
 
 
 
