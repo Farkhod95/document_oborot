@@ -1,4 +1,5 @@
-from django_filters.rest_framework import FilterSet
+from django.db.models import Q
+from django_filters import FilterSet, filters
 import django_filters
 from docoborot.models import Command, CommandFile, ReplyLetter, ReplyLetterFile, EmployeeAccount
 
@@ -55,6 +56,30 @@ class TaskEventFilter(FilterSet):
             'event_type': ['exact'],
             'from_status': ['exact'],
             'to_status': ['exact'],
+        }
+
+class TaskAttachmentAllFilter(FilterSet):
+    # task ni exact emas, method orqali boshqaramiz
+    task = filters.NumberFilter(method="filter_task")
+
+    def filter_task(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        return queryset.filter(
+            Q(task_id=value) |
+            Q(part__task_id=value, part__status=TaskPart.STATUS.DONE)  # ✅ done
+        ).distinct()
+
+    class Meta:
+        model = TaskAttachment
+        fields = {
+            'task': ['exact'],   # bu qolsa ham endi method ishlaydi
+            'part': ['exact'],
+            'comment': ['exact'],
+            'link': ['exact'],
+            'title': ['exact', 'icontains'],
+            'uploaded_by': ['exact'],
         }
 
 

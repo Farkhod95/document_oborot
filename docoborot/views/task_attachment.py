@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 
 from docoborot.models import TaskAttachment, TaskPart
 from docoborot.serializers import TaskAttachmentSerializer
-from docoborot.filterset import TaskAttachmentFilter
+from docoborot.filterset import TaskAttachmentFilter, TaskAttachmentAllFilter
 
 from restapp.pagination import ResultsSetPagination
 from restapp.utils.responses import nonContent
@@ -31,33 +31,22 @@ class TaskAttachmentFieldInfoView(APIView):
         return Response(field_info)
 
 
-class  TaskAttachmentAllView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated,]
+class TaskAttachmentAllView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = TaskAttachmentSerializer
     pagination_class = ResultsSetPagination
     filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend)
-    filterset_class = TaskAttachmentFilter
+    filterset_class = TaskAttachmentAllFilter
     search_fields = ('title', 'file')
     ordering = ['pk']
     http_method_names = ['get']
 
     def get_queryset(self):
-        qs = (
+        return (
             TaskAttachment.objects
             .select_related('task', 'part', 'comment', 'uploaded_by')
             .all()
         )
-
-        task_id = self.request.query_params.get('task')
-        if task_id:
-            # ✅ 1) Task'ga bevosita bog'langan attachmentlar (task_id=task_id)
-            # ✅ 2) Shu task'ning status=done bo'lgan partlariga bog'langan attachmentlar
-            qs = qs.filter(
-                Q(task_id=task_id) |
-                Q(part__task_id=task_id, part__status='done')
-            ).distinct()
-
-        return qs
 
 
 
