@@ -75,11 +75,13 @@ class Task(BaseModel):
 
     def recompute_is_read_file(self, save: bool = True) -> bool:
         """
-        Task ga tegishli attachmentlardan bittasi bo'lsa ham is_read_file=False bo'lsa,
-        Task.is_read_file=False bo'ladi. Aks holda True.
+        Task.is_read_file:
+        - Agar Task ga tegishli TaskPart lar ichida bittasi bo'lsa ham is_read_file=False bo'lsa => False
+        - Aks holda => True
+        Eslatma: agar TaskPart umuman bo'lmasa, True deb qoldiramiz.
         """
-        has_unread = self.attachments.filter(is_read_file=False).exists()
-        new_value = not has_unread
+        has_unread_part = self.parts.filter(is_read_file=False).exists()
+        new_value = not has_unread_part
 
         if self.is_read_file != new_value:
             self.is_read_file = new_value
@@ -424,7 +426,8 @@ class TaskAttachment(BaseModel):
         # 1) Agar attachment partga tegishli bo'lsa — part flag
         if self.part_id:
             self.part.recompute_is_read_file(save=True)
-            self.task.recompute_is_read_file(save=True)
+            if self.part and self.part.task_id:
+                self.part.task.recompute_is_read_file(save=True)
         # 2) Task flag: attachment qaysi taskga tegishli bo'lsa shu task bo'yicha
         #    (part attachmentlari ham taskga tegishli bo'lib turadi)
         # if self.task_id:
